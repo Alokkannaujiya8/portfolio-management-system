@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Gallery } from '../../../services/gallery';
+import { API_BASE_URL } from '../../../config';
 
 @Component({
   selector: 'app-gallery-mgmt',
@@ -8,6 +9,7 @@ import { Gallery } from '../../../services/gallery';
   styleUrl: './gallery-mgmt.css',
 })
 export class GalleryMgmt implements OnInit {
+  readonly apiBase = API_BASE_URL;
   items: any[] = [];
   categories: string[] = [];
   isLoading = true;
@@ -90,7 +92,7 @@ export class GalleryMgmt implements OnInit {
     this.selectedImageFile = null;
     this.selectedDocFile = null;
     if (item.mediaType === 'Image' && item.mediaPath) {
-      this.imagePreview = `http://localhost:5154${item.mediaPath}`;
+      this.imagePreview = `${API_BASE_URL}${item.mediaPath}`;
     } else {
       this.imagePreview = null;
     }

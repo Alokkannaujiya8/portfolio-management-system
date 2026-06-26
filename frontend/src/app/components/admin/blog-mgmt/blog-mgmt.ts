@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { Blog } from '../../../services/blog';
+import { API_BASE_URL } from '../../../config';
 
 @Component({
   selector: 'app-blog-mgmt',
@@ -9,6 +10,7 @@ import { Blog } from '../../../services/blog';
   styleUrl: './blog-mgmt.css',
 })
 export class BlogMgmt implements OnInit {
+  readonly apiBase = API_BASE_URL;
   posts: any[] = [];
   categories: any[] = [];
   comments: any[] = [];

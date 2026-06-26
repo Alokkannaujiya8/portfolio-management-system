@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Portfolio } from '../../../services/portfolio';
+import { API_BASE_URL } from '../../../config';
 
 @Component({
   selector: 'app-projects',
@@ -139,7 +140,7 @@ export class Projects implements OnInit {
 
   assetUrl(path?: string): string {
     if (!path) return '';
-    return path.startsWith('http') ? path : `http://localhost:5154${path}`;
+    return path.startsWith('http') ? path : `${API_BASE_URL}${path}`;
   }
 }
 

@@ -1,5 +1,6 @@
 import { AfterViewInit, Component } from '@angular/core';
 import { HomeData, Portfolio } from '../../../services/portfolio';
+import { API_BASE_URL } from '../../../config';
 
 declare const AOS: { init: (options: object) => void };
 declare const Typed: new (selector: string, options: object) => object;
@@ -33,7 +34,7 @@ export class Home implements AfterViewInit {
       return '';
     }
 
-    return path.startsWith('http') ? path : `http://localhost:5154${path}`;
+    return path.startsWith('http') ? path : `${API_BASE_URL}${path}`;
   }
 
   ngAfterViewInit(): void {

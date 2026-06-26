@@ -1,12 +1,13 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { forkJoin, Observable } from 'rxjs';
+import { API_BASE_URL } from '../config';
 
 @Injectable({
   providedIn: 'root',
 })
 export class Portfolio {
-  private readonly apiUrl = 'http://localhost:5154/api';
+  private readonly apiUrl = `${API_BASE_URL}/api`;
 
   constructor(private readonly http: HttpClient) {}
 

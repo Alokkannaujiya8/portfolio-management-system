@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Gallery as GalleryService } from '../../../services/gallery';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { API_BASE_URL } from '../../../config';
 
 @Component({
   selector: 'app-gallery',
@@ -110,7 +111,7 @@ export class Gallery implements OnInit {
 
   assetUrl(path?: string): string {
     if (!path) return '';
-    return path.startsWith('http') ? path : `http://localhost:5154${path}`;
+    return path.startsWith('http') ? path : `${API_BASE_URL}${path}`;
   }
 
   private extractYoutubeId(url?: string): string | null {

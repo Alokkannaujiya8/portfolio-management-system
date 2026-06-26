@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import * as signalR from '@microsoft/signalr';
 import { Subject } from 'rxjs';
+import { API_BASE_URL } from '../config';
 
 @Injectable({
   providedIn: 'root',
@@ -25,12 +26,12 @@ export class Chat {
     
     if (token) {
       this.hubConnection = new signalR.HubConnectionBuilder()
-        .withUrl(`http://localhost:5154/chathub?access_token=${token}`, options)
+        .withUrl(`${API_BASE_URL}/chathub?access_token=${token}`, options)
         .withAutomaticReconnect()
         .build();
     } else {
       this.hubConnection = new signalR.HubConnectionBuilder()
-        .withUrl('http://localhost:5154/chathub', options)
+        .withUrl(`${API_BASE_URL}/chathub`, options)
         .withAutomaticReconnect()
         .build();
     }

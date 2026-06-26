@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Blog } from '../../../services/blog';
+import { API_BASE_URL } from '../../../config';
 
 @Component({
   selector: 'app-blog-detail',
@@ -172,7 +173,7 @@ export class BlogDetail implements OnInit {
 
   assetUrl(path?: string): string {
     if (!path) return 'assets/img/blog-default.jpg';
-    return path.startsWith('http') ? path : `http://localhost:5154${path}`;
+    return path.startsWith('http') ? path : `${API_BASE_URL}${path}`;
   }
 }
 

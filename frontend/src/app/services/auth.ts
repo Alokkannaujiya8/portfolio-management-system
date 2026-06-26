@@ -2,12 +2,13 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
 import { Router } from '@angular/router';
+import { API_BASE_URL } from '../config';
 
 @Injectable({
   providedIn: 'root',
 })
 export class Auth {
-  private readonly apiUrl = 'http://localhost:5154/api/Auth';
+  private readonly apiUrl = `${API_BASE_URL}/api/Auth`;
 
   constructor(
     private readonly http: HttpClient,

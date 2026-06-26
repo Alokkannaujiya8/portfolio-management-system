@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Blog } from '../../../services/blog';
+import { API_BASE_URL } from '../../../config';
 
 @Component({
   selector: 'app-blog-form',
@@ -82,7 +83,7 @@ export class BlogForm implements OnInit {
           isPublished: post.isPublished ?? true
         };
         if (post.featuredImage) {
-          this.imagePreview = `http://localhost:5154${post.featuredImage}`;
+          this.imagePreview = `${API_BASE_URL}${post.featuredImage}`;
         }
         this.isLoading = false;
       },

@@ -44,3 +44,13 @@ Desktop.ini
 *.user
 *.userosscache
 *.sln.docstates
+
+# Deployment/Publish outputs
+publish/
+
+# Angular build outputs in backend's wwwroot
+backend/src/Portfolio.WebAPI/wwwroot/*.html
+backend/src/Portfolio.WebAPI/wwwroot/*.js
+backend/src/Portfolio.WebAPI/wwwroot/*.css
+backend/src/Portfolio.WebAPI/wwwroot/*.ico
+backend/src/Portfolio.WebAPI/wwwroot/browser/
