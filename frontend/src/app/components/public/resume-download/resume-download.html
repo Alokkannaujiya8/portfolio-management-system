@@ -1,0 +1,60 @@
+<div class="container my-5">
+  <div class="card shadow-lg mx-auto" style="max-width: 600px; border-radius: 20px; overflow: hidden;">
+    <div class="card-header text-center text-white py-4" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none;">
+      <i class="fas fa-file-pdf fa-4x mb-3 animate__animated animate__bounceIn"></i>
+      <h3>Download Resume</h3>
+      <p class="mb-0 opacity-75">Please provide your details below</p>
+    </div>
+    
+    <div class="card-body p-4 bg-white">
+      <div *ngIf="errorMessage" class="alert alert-danger rounded-3" role="alert">
+        {{ errorMessage }}
+      </div>
+
+      <form (ngSubmit)="onSubmit()" #resumeForm="ngForm">
+        <input type="hidden" name="country" [(ngModel)]="model.country">
+        <input type="hidden" name="city" [(ngModel)]="model.city">
+
+        <div class="mb-3">
+          <label for="visitorName" class="form-label fw-bold text-dark">Your Name *</label>
+          <input type="text" id="visitorName" name="visitorName" class="form-control form-control-lg rounded-3" 
+                 placeholder="Enter your full name" required [(ngModel)]="model.visitorName" #nameInput="ngModel"
+                 [class.is-invalid]="nameInput.invalid && nameInput.touched">
+          <div class="invalid-feedback">Name is required.</div>
+        </div>
+
+        <div class="mb-3">
+          <label for="visitorEmail" class="form-label fw-bold text-dark">Your Email *</label>
+          <input type="email" id="visitorEmail" name="visitorEmail" class="form-control form-control-lg rounded-3" 
+                 placeholder="Enter your email" required pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$" 
+                 [(ngModel)]="model.visitorEmail" #emailInput="ngModel"
+                 [class.is-invalid]="emailInput.invalid && emailInput.touched">
+          <div class="invalid-feedback">Please enter a valid email address.</div>
+        </div>
+
+        <div class="mb-3">
+          <label for="companyName" class="form-label fw-bold text-dark">Company Name (Optional)</label>
+          <input type="text" id="companyName" name="companyName" class="form-control form-control-lg rounded-3" 
+                 placeholder="Where do you work?" [(ngModel)]="model.companyName">
+        </div>
+
+        <div class="mb-3">
+          <label for="designation" class="form-label fw-bold text-dark">Designation (Optional)</label>
+          <input type="text" id="designation" name="designation" class="form-control form-control-lg rounded-3" 
+                 placeholder="Your job title" [(ngModel)]="model.designation">
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-lg w-100 py-3 rounded-3 text-white fw-bold shadow" 
+                [disabled]="resumeForm.invalid || isLoading" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none;">
+          <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+          <span *ngIf="isLoading">Preparing Download...</span>
+          <span *ngIf="!isLoading">Download Resume <i class="fas fa-download ms-2"></i></span>
+        </button>
+
+        <div class="text-center text-muted mt-3 small">
+          <i class="fas fa-shield-alt text-primary me-1"></i> Your information is secure
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

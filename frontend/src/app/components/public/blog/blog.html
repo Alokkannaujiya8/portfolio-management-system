@@ -1,0 +1,121 @@
+<div class="container my-5 pt-4">
+  <div class="row">
+    <!-- Blog Posts Grid -->
+    <div class="col-lg-8">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-dark fw-bold">Latest Blog Posts</h2>
+        <button *ngIf="categoryId || selectedTag || searchTerm" (click)="clearFilters()" class="btn btn-outline-secondary btn-sm rounded-pill">
+          Clear Filters <i class="fas fa-times ms-1"></i>
+        </button>
+      </div>
+
+      <div *ngIf="isLoading" class="text-center py-5">
+        <div class="spinner-border text-primary" role="status"></div>
+        <p class="text-muted mt-2">Loading posts...</p>
+      </div>
+
+      <div *ngIf="!isLoading && posts.length === 0" class="text-center py-5 card bg-light rounded-4 shadow-sm border-0">
+        <i class="far fa-frown fa-4x text-muted mb-3"></i>
+        <h4 class="text-dark">No blog posts found</h4>
+        <p class="text-muted">Try adjusting your search criteria or categories</p>
+      </div>
+
+      <div *ngIf="!isLoading && posts.length > 0" class="row g-4">
+        <div *ngFor="let post of posts" class="col-md-6">
+          <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden position-relative">
+            <img [src]="assetUrl(post.featuredImage)" [alt]="post.title" class="card-img-top" style="height: 200px; object-fit: cover;">
+            
+            <div class="card-body p-4">
+              <span class="badge bg-primary-subtle text-primary mb-2 rounded-pill px-3 py-1 text-uppercase font-monospace small">
+                {{ post.categoryName || 'General' }}
+              </span>
+              <h5 class="card-title text-dark fw-bold mb-2">
+                <a [routerLink]="['/blog', post.slug]" class="text-decoration-none text-dark hover-primary">{{ post.title }}</a>
+              </h5>
+              <p class="card-text text-muted small mb-4">
+                {{ post.excerpt | slice:0:120 }}...
+              </p>
+            </div>
+            
+            <div class="card-footer bg-white border-0 px-4 pb-4 pt-0 d-flex justify-content-between align-items-center text-muted small">
+              <div>
+                <i class="far fa-calendar-alt me-1"></i> {{ post.createdDate | date:'mediumDate' }}
+              </div>
+              <div class="d-flex align-items-center gap-3">
+                <span><i class="far fa-eye me-1"></i> {{ post.viewCount || 0 }}</span>
+                <span><i class="far fa-thumbs-up me-1"></i> {{ post.likeCount || 0 }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pagination -->
+      <nav *ngIf="totalPages > 1" class="mt-5" aria-label="Blog pagination">
+        <ul class="pagination justify-content-center">
+          <li class="page-item" [class.disabled]="currentPage === 1">
+            <a class="page-link rounded-circle me-2" (click)="setPage(currentPage - 1)" style="cursor: pointer;">
+              <i class="fas fa-chevron-left"></i>
+            </a>
+          </li>
+          
+          <li *ngFor="let page of getPagesArray()" class="page-item" [class.active]="currentPage === page">
+            <a class="page-link rounded-circle me-2" (click)="setPage(page)" style="cursor: pointer;">{{ page }}</a>
+          </li>
+          
+          <li class="page-item" [class.disabled]="currentPage === totalPages">
+            <a class="page-link rounded-circle" (click)="setPage(currentPage + 1)" style="cursor: pointer;">
+              <i class="fas fa-chevron-right"></i>
+            </a>
+          </li>
+        </ul>
+      </nav>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="col-lg-4">
+      <!-- Search Widget -->
+      <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
+        <h5 class="text-dark fw-bold mb-3">Search</h5>
+        <div class="input-group">
+          <input type="text" [(ngModel)]="searchTerm" class="form-control rounded-start-pill border-2 border-end-0" placeholder="Type here..." (keyup.enter)="onSearch()">
+          <button (click)="onSearch()" class="btn btn-primary rounded-end-pill px-4" type="button">
+            <i class="fas fa-search"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Categories Widget -->
+      <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
+        <h5 class="text-dark fw-bold mb-3">Categories</h5>
+        <div class="list-group list-group-flush">
+          <button (click)="filterByCategory(undefined)" class="list-group-item list-group-item-action border-0 px-0 d-flex justify-content-between align-items-center" [class.fw-bold]="!categoryId">
+            <span>All Categories</span>
+          </button>
+          <button *ngFor="let cat of categories" (click)="filterByCategory(cat.categoryId)" 
+                  class="list-group-item list-group-item-action border-0 px-0 d-flex justify-content-between align-items-center"
+                  [class.fw-bold]="categoryId === cat.categoryId">
+            <span>{{ cat.categoryName }}</span>
+            <span class="badge bg-secondary-subtle text-secondary rounded-pill">{{ cat.postCount || 0 }}</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Popular Posts Widget -->
+      <div class="card border-0 shadow-sm rounded-4 p-4">
+        <h5 class="text-dark fw-bold mb-3">Popular Posts</h5>
+        <div class="d-flex flex-column gap-3">
+          <div *ngFor="let pop of popularPosts" class="d-flex align-items-center gap-3">
+            <img [src]="assetUrl(pop.featuredImage)" [alt]="pop.title" class="rounded-3" style="width: 60px; height: 60px; object-fit: cover;">
+            <div>
+              <h6 class="mb-1 fw-bold">
+                <a [routerLink]="['/blog', pop.slug]" class="text-decoration-none text-dark hover-primary">{{ pop.title }}</a>
+              </h6>
+              <small class="text-muted"><i class="far fa-eye me-1"></i> {{ pop.viewCount || 0 }} views</small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

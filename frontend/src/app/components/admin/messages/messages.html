@@ -1,0 +1,157 @@
+<div class="container-fluid py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2 class="text-dark fw-bold mb-0">
+        <i class="fas fa-envelope text-primary me-2"></i>Inbox Messages
+      </h2>
+      <p class="text-muted mb-0 small">Manage contact form responses and reply to inquiries.</p>
+    </div>
+    <button (click)="loadMessages()" class="btn btn-outline-primary rounded-pill px-3">
+      <i class="fas fa-sync-alt me-1"></i> Refresh
+    </button>
+  </div>
+
+  <!-- Messages List -->
+  <div class="card border-0 shadow-sm rounded-4 p-4">
+    <div *ngIf="isLoading" class="text-center py-5">
+      <div class="spinner-border text-primary" role="status"></div>
+      <p class="text-muted mt-2 small">Loading messages...</p>
+    </div>
+
+    <div *ngIf="!isLoading" class="table-responsive">
+      <table class="table table-hover align-middle">
+        <thead>
+          <tr class="small text-muted text-uppercase">
+            <th style="width: 100px;">Status</th>
+            <th>Sender</th>
+            <th>Subject</th>
+            <th>Message Snippet</th>
+            <th>Received Date</th>
+            <th>IP Address</th>
+            <th class="text-end">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let msg of messages" [class.fw-bold]="!msg.isRead" class="position-relative">
+            <td>
+              <span class="badge" [ngClass]="msg.isRead ? 'bg-secondary-subtle text-secondary' : 'bg-warning-subtle text-warning'">
+                {{ msg.isRead ? 'Read' : 'New' }}
+              </span>
+            </td>
+            <td>
+              <div class="d-flex flex-column">
+                <span class="text-dark">{{ msg.name }}</span>
+                <span class="text-muted small" style="font-size: 11px;">{{ msg.email }}</span>
+              </div>
+            </td>
+            <td>{{ msg.subject || '(No Subject)' }}</td>
+            <td class="text-muted small">
+              {{ msg.message?.length > 60 ? (msg.message | slice:0:60) + '...' : msg.message }}
+            </td>
+            <td class="small">{{ msg.createdDate | date:'MMM dd, yyyy HH:mm' }}</td>
+            <td class="text-muted small">{{ msg.ipAddress || 'Unknown' }}</td>
+            <td class="text-end">
+              <button (click)="viewMessage(msg)" class="btn btn-sm btn-primary rounded-pill px-3">
+                <i class="fas fa-eye me-1"></i> View
+              </button>
+            </td>
+          </tr>
+          <tr *ngIf="messages.length === 0">
+            <td colspan="7" class="text-center text-muted py-5">
+              <i class="fas fa-inbox fa-3x text-muted opacity-25 mb-3"></i>
+              <p class="mb-0">No messages received yet.</p>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- View and Reply Modal Overlay -->
+<div *ngIf="selectedMessage" class="modal-backdrop fade show"></div>
+<div *ngIf="selectedMessage" class="modal fade show d-block" tabindex="-1" role="dialog" style="background: rgba(0,0,0,0.5);">
+  <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+    <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+      <!-- Modal Header -->
+      <div class="modal-header bg-primary text-white border-0 py-3">
+        <h5 class="modal-title fw-bold">
+          <i class="fas fa-envelope-open-text me-2"></i> Message Details
+        </h5>
+        <button type="button" class="btn-close btn-close-white" (click)="closeModal()" aria-label="Close"></button>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="modal-body p-4 bg-light">
+        <div class="row g-3">
+          <!-- Metadata Info -->
+          <div class="col-md-6">
+            <div class="bg-white p-3 rounded-3 shadow-sm h-100">
+              <span class="text-muted small fw-bold">FROM:</span>
+              <p class="text-dark fw-bold mb-2">{{ selectedMessage.name }}</p>
+              
+              <span class="text-muted small fw-bold">EMAIL:</span>
+              <p class="text-primary mb-2">
+                <a [href]="'mailto:' + selectedMessage.email">{{ selectedMessage.email }}</a>
+              </p>
+              
+              <span class="text-muted small fw-bold">DATE:</span>
+              <p class="text-dark mb-0 small">{{ selectedMessage.createdDate | date:'MMMM dd, yyyy @ hh:mm a' }}</p>
+            </div>
+          </div>
+
+          <div class="col-md-6">
+            <div class="bg-white p-3 rounded-3 shadow-sm h-100">
+              <span class="text-muted small fw-bold">SUBJECT:</span>
+              <p class="text-dark fw-bold mb-2">{{ selectedMessage.subject || '(No Subject)' }}</p>
+
+              <span class="text-muted small fw-bold">IP ADDRESS:</span>
+              <p class="text-dark mb-2 small">{{ selectedMessage.ipAddress || 'Unknown' }}</p>
+
+              <span class="text-muted small fw-bold">USER AGENT:</span>
+              <p class="text-muted mb-0 small text-truncate" [title]="selectedMessage.userAgent">
+                {{ selectedMessage.userAgent || 'Unknown' }}
+              </p>
+            </div>
+          </div>
+
+          <!-- Message Body -->
+          <div class="col-12">
+            <div class="bg-white p-4 rounded-3 shadow-sm">
+              <span class="text-muted small fw-bold d-block mb-2">MESSAGE:</span>
+              <p class="text-dark mb-0 whitespace-pre-wrap" style="white-space: pre-wrap; font-size: 15px; line-height: 1.6;">
+                {{ selectedMessage.message }}
+              </p>
+            </div>
+          </div>
+
+          <!-- Email Reply Panel -->
+          <div class="col-12 mt-4">
+            <div class="card border-0 shadow-sm rounded-3">
+              <div class="card-header bg-dark text-white border-0 py-2">
+                <h6 class="mb-0 fw-bold"><i class="fas fa-reply me-2"></i>Draft Reply via Email</h6>
+              </div>
+              <div class="card-body p-3 bg-white">
+                <div class="mb-3">
+                  <label for="replyText" class="form-label text-muted small fw-bold">Your Reply Draft</label>
+                  <textarea id="replyText" [(ngModel)]="replyText" class="form-control rounded-3" rows="5" placeholder="Type your email response..."></textarea>
+                </div>
+                <div class="text-end">
+                  <button (click)="sendEmailReply()" class="btn btn-success rounded-pill px-4">
+                    <i class="fas fa-paper-plane me-1"></i> Send Reply via Email Client
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="modal-footer border-0 bg-white py-3">
+        <button type="button" class="btn btn-secondary rounded-pill px-4" (click)="closeModal()">Close</button>
+      </div>
+    </div>
+  </div>
+</div>

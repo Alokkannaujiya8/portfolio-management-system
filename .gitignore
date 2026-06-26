@@ -1,0 +1,46 @@
+# User-specific files
+*.user
+*.userosscache
+*.sln.docstates
+
+# Visual Studio Cache and Build Results
+**/.vs/
+**/[Bb]in/
+**/[Oo]bj/
+**/[Oo]ut/
+*.[Pp]db
+*.dll
+*.exe
+
+# Mono/DNX
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# Angular / Node
+**/node_modules/
+npm-debug.log
+yarn-error.log
+**/.angular/
+**/dist/
+
+
+# OS files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Environment files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# IDEs
+.idea/
+.vscode/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates

@@ -1,0 +1,948 @@
+﻿@using Portfolio_Management_System.DAL
+@using Portfolio_Management_System.Models
+@inject DbHelper _dbHelper
+@{
+    var username = Context.Session.GetString("Admin") ?? "Admin";
+    var profile = await _dbHelper.GetProfileAsync();
+    var profilePhoto = profile?.Photo ?? "/images/default-avatar.jpg";
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+    <title>@ViewData["Title"] - Admin Panel</title>
+
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+
+    <!-- Font Awesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+
+    <!-- Custom CSS -->
+    <link href="~/css/site.css" rel="stylesheet" />
+
+    <style>
+        :root {
+            --sidebar-width: 280px;
+            --sidebar-collapsed-width: 80px;
+            --primary-color: #4361ee;
+            --secondary-color: #3f37c9;
+            --success-color: #4cc9f0;
+            --danger-color: #f72585;
+            --dark-color: #1e1e2f;
+            --light-bg: #f8f9fa;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--light-bg);
+            overflow-x: hidden;
+        }
+
+        /* Admin Wrapper */
+        .admin-wrapper {
+            display: flex;
+            min-height: 100vh;
+            position: relative;
+        }
+
+        /* Sidebar */
+        .admin-sidebar {
+            width: var(--sidebar-width);
+            background: linear-gradient(135deg, var(--dark-color) 0%, #2d2d44 100%);
+            color: white;
+            transition: all 0.3s ease;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            z-index: 1000;
+            box-shadow: 2px 0 20px rgba(0,0,0,0.1);
+        }
+
+            .admin-sidebar.collapsed {
+                width: var(--sidebar-collapsed-width);
+            }
+
+                .admin-sidebar.collapsed .sidebar-link span,
+                .admin-sidebar.collapsed .sidebar-header h3 span {
+                    display: none;
+                }
+
+                .admin-sidebar.collapsed .sidebar-link i {
+                    margin-right: 0;
+                    font-size: 1.5rem;
+                }
+
+                .admin-sidebar.collapsed .sidebar-header {
+                    padding: 20px 0;
+                    text-align: center;
+                    justify-content: center;
+                }
+
+                    .admin-sidebar.collapsed .sidebar-header i {
+                        margin-right: 0;
+                        font-size: 2rem;
+                    }
+
+                    .admin-sidebar.collapsed .sidebar-header h3 {
+                        margin: 0;
+                    }
+
+                .admin-sidebar.collapsed .nav-section-title {
+                    text-align: center;
+                    font-size: 0.7rem;
+                }
+
+        /* Mobile Sidebar (off-canvas) */
+        @@media (max-width: 768px) {
+            .admin-sidebar
+
+        {
+            left: -280px;
+            transition: left 0.3s ease;
+            width: 280px;
+        }
+
+        .admin-sidebar.show {
+            left: 0;
+        }
+
+        .admin-main {
+            margin-left: 0 !important;
+            width: 100%;
+        }
+
+        .sidebar-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+            display: none;
+        }
+
+            .sidebar-overlay.show {
+                display: block;
+            }
+
+        }
+
+        /* Desktop sidebar collapsed */
+        @@media (min-width: 769px) {
+            .admin-main.expanded
+
+        {
+            margin-left: var(--sidebar-collapsed-width);
+        }
+
+        }
+
+        /* Sidebar Header */
+        .sidebar-header {
+            padding: 25px 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+            .sidebar-header h3 {
+                margin: 0;
+                font-size: 1.5rem;
+                font-weight: 600;
+            }
+
+                .sidebar-header h3 i {
+                    color: var(--primary-color);
+                    margin-right: 10px;
+                }
+
+        .toggle-sidebar-btn {
+            background: rgba(255,255,255,0.1);
+            border: none;
+            color: white;
+            width: 35px;
+            height: 35px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+            .toggle-sidebar-btn:hover {
+                background: rgba(255,255,255,0.2);
+            }
+
+        .mobile-toggle-btn {
+            display: none;
+        }
+
+        @@media (max-width: 768px) {
+            .desktop-toggle-btn
+
+        {
+            display: none;
+        }
+
+        .mobile-toggle-btn {
+            display: flex;
+        }
+
+        }
+
+        /* Sidebar Navigation */
+        .sidebar-nav {
+            padding: 20px 15px;
+        }
+
+            .sidebar-nav .nav-section {
+                margin-bottom: 25px;
+            }
+
+            .sidebar-nav .nav-section-title {
+                font-size: 0.75rem;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+                color: rgba(255,255,255,0.5);
+                margin-bottom: 15px;
+                padding-left: 15px;
+            }
+
+        .sidebar-link {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+            border-radius: 10px;
+            margin-bottom: 5px;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+            .sidebar-link i {
+                width: 25px;
+                font-size: 1.1rem;
+                margin-right: 12px;
+                transition: all 0.3s;
+            }
+
+            .sidebar-link span {
+                font-size: 0.95rem;
+                font-weight: 500;
+                flex: 1;
+            }
+
+            .sidebar-link:hover {
+                background: rgba(255,255,255,0.1);
+                color: white;
+                transform: translateX(5px);
+            }
+
+            .sidebar-link.active {
+                background: var(--primary-color);
+                color: white;
+                box-shadow: 0 5px 15px rgba(67,97,238,0.3);
+            }
+
+                .sidebar-link.active i {
+                    color: white;
+                }
+
+            .sidebar-link .badge {
+                margin-left: auto;
+            }
+
+        /* Main Content */
+        .admin-main {
+            flex: 1;
+            margin-left: var(--sidebar-width);
+            transition: margin-left 0.3s ease;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+        }
+
+        /* Top Navbar */
+        .top-navbar {
+            background: white;
+            padding: 15px 30px;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 999;
+        }
+
+        .page-title {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+            .page-title h4 {
+                margin: 0;
+                font-weight: 600;
+                color: var(--dark-color);
+            }
+
+            .page-title .breadcrumb {
+                margin: 0;
+                background: transparent;
+                padding: 0;
+            }
+
+            .page-title .breadcrumb-item a {
+                color: var(--primary-color);
+                text-decoration: none;
+            }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .user-dropdown {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            padding: 5px 10px;
+            border-radius: 10px;
+            transition: background 0.3s;
+        }
+
+            .user-dropdown:hover {
+                background: var(--light-bg);
+            }
+
+        .user-avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--primary-color);
+        }
+
+        .user-avatar-sm {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .user-name {
+            font-weight: 600;
+            color: var(--dark-color);
+        }
+
+        .user-role {
+            font-size: 0.8rem;
+            color: #6c757d;
+        }
+
+        .notification-badge {
+            position: relative;
+            cursor: pointer;
+        }
+
+            .notification-badge i {
+                font-size: 1.3rem;
+                color: #6c757d;
+            }
+
+            .notification-badge .badge {
+                position: absolute;
+                top: -5px;
+                right: -5px;
+                font-size: 0.6rem;
+                padding: 0.25rem 0.4rem;
+                animation: pulse 2s infinite;
+            }
+
+        @@keyframes pulse {
+            0%
+
+        {
+            transform: scale(1);
+        }
+
+        50% {
+            transform: scale(1.1);
+        }
+
+        100% {
+            transform: scale(1);
+        }
+
+        }
+
+        /* Content Area */
+        .content-wrapper {
+            padding: 30px;
+            flex: 1;
+        }
+
+        /* Footer */
+        .admin-footer {
+            background: white;
+            padding: 15px 30px;
+            text-align: center;
+            color: #6c757d;
+            border-top: 1px solid #dee2e6;
+            font-size: 0.9rem;
+        }
+
+        /* Mobile Responsive */
+        @@media (max-width: 768px) {
+            .top-navbar
+
+        {
+            padding: 15px;
+        }
+
+        .page-title h4 {
+            font-size: 1.2rem;
+        }
+
+        .content-wrapper {
+            padding: 15px;
+        }
+
+        .user-name, .user-role {
+            display: none;
+        }
+
+        }
+
+        /* Loading Overlay */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255,255,255,0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            display: none;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @@keyframes spin {
+            0%
+
+        {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
+
+        }
+
+        /* Toast Notifications */
+        .toast-container {
+            z-index: 9999;
+        }
+
+        .toast {
+            background: white;
+            border: none;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        /* Notification Dropdown */
+        .notification-dropdown {
+            width: 320px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .notification-item.unread {
+            background-color: rgba(67,97,238,0.05);
+        }
+
+        .notification-item:hover {
+            background-color: var(--light-bg);
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-wrapper">
+        <!-- Sidebar Overlay for Mobile -->
+        <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeMobileSidebar()"></div>
+
+        <!-- Sidebar -->
+        <aside class="admin-sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h3>
+                    <i class="fas fa-cogs"></i>
+                    <span>AdminPanel</span>
+                </h3>
+                <button class="toggle-sidebar-btn desktop-toggle-btn" onclick="toggleSidebar()">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <button class="toggle-sidebar-btn mobile-toggle-btn" onclick="closeMobileSidebar()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <div class="sidebar-nav">
+                <!-- Main Navigation -->
+                <div class="nav-section">
+                    <div class="nav-section-title">Main</div>
+                    <a class="sidebar-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Dashboard" ? "active" : "")"
+                       href="@Url.Action("Dashboard", "Admin")" onclick="closeMobileSidebarOnClick()">
+                        <i class="fas fa-tachometer-alt"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </div>
+
+                <!-- Content Management -->
+                <div class="nav-section">
+                    <div class="nav-section-title">Content</div>
+                    <a class="sidebar-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Profile" ? "active" : "")"
+                       href="@Url.Action("Profile", "Admin")" onclick="closeMobileSidebarOnClick()">
+                        <i class="fas fa-user"></i>
+                        <span>Profile</span>
+                    </a>
+                    <a class="sidebar-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Skills" ? "active" : "")"
+                       href="@Url.Action("Skills", "Admin")" onclick="closeMobileSidebarOnClick()">
+                        <i class="fas fa-chart-bar"></i>
+                        <span>Skills</span>
+                    </a>
+                    <a class="sidebar-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Projects" ? "active" : "")"
+                       href="@Url.Action("Projects", "Admin")" onclick="closeMobileSidebarOnClick()">
+                        <i class="fas fa-project-diagram"></i>
+                        <span>Projects</span>
+                    </a>
+                    <a class="sidebar-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Experience" ? "active" : "")"
+                       href="@Url.Action("Experience", "Admin")" onclick="closeMobileSidebarOnClick()">
+                        <i class="fas fa-briefcase"></i>
+                        <span>Experience</span>
+                    </a>
+                    <a class="sidebar-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Education" ? "active" : "")"
+                       href="@Url.Action("Education", "Admin")" onclick="closeMobileSidebarOnClick()">
+                        <i class="fas fa-graduation-cap"></i>
+                        <span>Education</span>
+                    </a>
+                </div>
+
+                <!-- Blog Management -->
+                <div class="nav-section">
+                    <div class="nav-section-title">Blog</div>
+                    <a class="sidebar-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "AdminBlog" ? "active" : "")"
+                       href="@Url.Action("Index", "AdminBlog")" onclick="closeMobileSidebarOnClick()">
+                        <i class="fas fa-blog"></i>
+                        <span>Blog Posts</span>
+                    </a>
+                    <a class="sidebar-link" href="@Url.Action("Categories", "AdminBlog")" onclick="closeMobileSidebarOnClick()">
+                        <i class="fas fa-folder"></i>
+                        <span>Categories</span>
+                    </a>
+                    <a class="sidebar-link" href="@Url.Action("Comments", "AdminBlog")" onclick="closeMobileSidebarOnClick()">
+                        <i class="fas fa-comments"></i>
+                        <span>Comments</span>
+                    </a>
+                </div>
+
+                <!-- Gallery Management -->
+                <div class="nav-section">
+                    <div class="nav-section-title">Gallery</div>
+                    <a class="sidebar-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "AdminGallery" ? "active" : "")"
+                       href="@Url.Action("Index", "AdminGallery")" onclick="closeMobileSidebarOnClick()">
+                        <i class="fas fa-images"></i>
+                        <span>Gallery Items</span>
+                    </a>
+                </div>
+
+                <!-- Communications -->
+                <div class="nav-section">
+                    <div class="nav-section-title">Communications</div>
+                    <a class="sidebar-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Messages" ? "active" : "")"
+                       href="@Url.Action("Messages", "Admin")" onclick="closeMobileSidebarOnClick()">
+                        <i class="fas fa-envelope"></i>
+                        <span>Messages</span>
+                        <span class="badge bg-danger ms-auto" id="unreadMessagesCount">0</span>
+                    </a>
+                    <a class="sidebar-link @(ViewContext.RouteData.Values["action"]?.ToString() == "ResumeViews" ? "active" : "")"
+                       href="@Url.Action("ResumeViews", "Admin")" onclick="closeMobileSidebarOnClick()">
+                        <i class="fas fa-file-pdf"></i>
+                        <span>Resume Views</span>
+                    </a>
+                </div>
+
+                <!-- System -->
+                <div class="nav-section">
+                    <div class="nav-section-title">System</div>
+                    <a class="sidebar-link" href="@Url.Action("Index", "Home")" target="_blank" onclick="closeMobileSidebarOnClick()">
+                        <i class="fas fa-external-link-alt"></i>
+                        <span>View Site</span>
+                    </a>
+                    <a class="sidebar-link text-danger" href="@Url.Action("Logout", "Admin")" onclick="closeMobileSidebarOnClick()">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>Logout</span>
+                    </a>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="admin-main" id="mainContent">
+            <!-- Top Navbar -->
+            <nav class="top-navbar">
+                <div class="page-title">
+                    <button class="btn btn-outline-secondary d-md-none" onclick="openMobileSidebar()">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <button class="btn btn-outline-secondary desktop-toggle-btn d-none d-md-block" onclick="toggleSidebar()">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <h4>@ViewData["Title"]</h4>
+                    <nav aria-label="breadcrumb" class="d-none d-md-block">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="@Url.Action("Dashboard", "Admin")">Dashboard</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">@ViewData["Title"]</li>
+                        </ol>
+                    </nav>
+                </div>
+
+                <div class="user-info">
+                    <!-- Notifications Dropdown -->
+                    <div class="dropdown">
+                        <div class="notification-badge" id="notificationDropdown" data-bs-toggle="dropdown">
+                            <i class="far fa-bell"></i>
+                            <span class="badge bg-danger" id="notificationCount">0</span>
+                        </div>
+                        <ul class="dropdown-menu dropdown-menu-end notification-dropdown" aria-labelledby="notificationDropdown">
+                            <li class="dropdown-header">Notifications</li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li id="notificationList" class="text-center py-3">
+                                <div class="spinner-border spinner-border-sm text-primary" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item text-center" href="@Url.Action("Messages", "Admin")">View All Messages</a></li>
+                        </ul>
+                    </div>
+
+                    <!-- User Dropdown -->
+                    <div class="dropdown">
+                        <div class="user-dropdown" data-bs-toggle="dropdown">
+                            <img src="@profilePhoto" alt="@username" class="user-avatar-sm" id="userAvatar" onerror="this.src='/images/default-avatar.jpg'">
+                            <div class="d-none d-md-block">
+                                <div class="user-name">@username</div>
+                                <div class="user-role">Administrator</div>
+                            </div>
+                            <i class="fas fa-chevron-down ms-2"></i>
+                        </div>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="@Url.Action("Profile", "Admin")"><i class="fas fa-user me-2"></i>Profile</a></li>
+                            <li><a class="dropdown-item" href="#" onclick="showLoading()"><i class="fas fa-cog me-2"></i>Settings</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item text-danger" href="@Url.Action("Logout", "Admin")"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </nav>
+
+            <!-- Content Area -->
+            <div class="content-wrapper">
+                @RenderBody()
+            </div>
+
+            <!-- Footer -->
+            <footer class="admin-footer">
+                <p class="mb-0">
+                    &copy; @DateTime.Now.Year - Portfolio Management System.
+                    All rights reserved. | v1.0.0
+                </p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner"></div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-3">
+        <div id="liveToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast-header">
+                <i class="fas fa-bell me-2 text-primary"></i>
+                <strong class="me-auto">Notification</strong>
+                <small>just now</small>
+                <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
+            </div>
+            <div class="toast-body" id="toastMessage"></div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // Check if mobile view
+        function isMobile() {
+            return window.innerWidth <= 768;
+        }
+
+        // Toggle sidebar (desktop - collapse/expand)
+        function toggleSidebar() {
+            if (!isMobile()) {
+                document.getElementById('sidebar').classList.toggle('collapsed');
+                document.getElementById('mainContent').classList.toggle('expanded');
+
+                // Save state to localStorage
+                var isCollapsed = document.getElementById('sidebar').classList.contains('collapsed');
+                localStorage.setItem('sidebarCollapsed', isCollapsed);
+            }
+        }
+
+        // Open mobile sidebar
+        function openMobileSidebar() {
+            if (isMobile()) {
+                document.getElementById('sidebar').classList.add('show');
+                document.getElementById('sidebarOverlay').classList.add('show');
+                document.body.style.overflow = 'hidden';
+            }
+        }
+
+        // Close mobile sidebar
+        function closeMobileSidebar() {
+            if (isMobile()) {
+                document.getElementById('sidebar').classList.remove('show');
+                document.getElementById('sidebarOverlay').classList.remove('show');
+                document.body.style.overflow = '';
+            }
+        }
+
+        // Close mobile sidebar when clicking on link (with delay for navigation)
+        function closeMobileSidebarOnClick() {
+            if (isMobile()) {
+                setTimeout(function() {
+                    closeMobileSidebar();
+                }, 150);
+            }
+        }
+
+        // Restore sidebar state on desktop
+        function restoreSidebarState() {
+            if (!isMobile()) {
+                var isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
+                if (isCollapsed) {
+                    document.getElementById('sidebar').classList.add('collapsed');
+                    document.getElementById('mainContent').classList.add('expanded');
+                }
+            }
+        }
+
+        // Handle window resize
+        function handleResize() {
+            if (!isMobile()) {
+                // Desktop view
+                closeMobileSidebar();
+                restoreSidebarState();
+            } else {
+                // Mobile view - ensure sidebar is collapsed and overlay hidden
+                document.getElementById('sidebar').classList.remove('collapsed');
+                document.getElementById('mainContent').classList.remove('expanded');
+                closeMobileSidebar();
+            }
+        }
+
+        // Show loading
+        function showLoading() {
+            document.getElementById('loadingOverlay').style.display = 'flex';
+        }
+
+        // Hide loading
+        function hideLoading() {
+            document.getElementById('loadingOverlay').style.display = 'none';
+        }
+
+        // Show toast
+        function showToast(type, message) {
+            var toast = new bootstrap.Toast(document.getElementById('liveToast'));
+            var toastBody = $('#toastMessage');
+            var toastHeader = $('.toast-header strong');
+
+            if (type === 'success') {
+                toastHeader.html('<i class="fas fa-check-circle text-success me-2"></i>Success');
+                toastBody.html('<i class="fas fa-check-circle me-2 text-success"></i>' + message);
+            } else if (type === 'error') {
+                toastHeader.html('<i class="fas fa-exclamation-circle text-danger me-2"></i>Error');
+                toastBody.html('<i class="fas fa-exclamation-circle me-2 text-danger"></i>' + message);
+            } else {
+                toastHeader.html('<i class="fas fa-info-circle text-info me-2"></i>Info');
+                toastBody.html('<i class="fas fa-info-circle me-2 text-info"></i>' + message);
+            }
+
+            toast.show();
+        }
+
+        // Update unread messages count
+        function updateUnreadMessages() {
+            $.ajax({
+                url: '/Admin/GetUnreadMessagesCount',
+                type: 'GET',
+                success: function(count) {
+                    var badge = $('#unreadMessagesCount');
+                    badge.text(count);
+                    if (count == 0 || count == '0') {
+                        badge.hide();
+                    } else {
+                        badge.show();
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.log('Error loading unread messages:', error);
+                    $('#unreadMessagesCount').text('0').hide();
+                }
+            });
+        }
+
+        // Load notifications
+        function loadNotifications() {
+            $.ajax({
+                url: '/Admin/GetRecentMessages',
+                type: 'GET',
+                success: function(messages) {
+                    var notificationList = $('#notificationList');
+                    var notificationCount = $('#notificationCount');
+
+                    if (messages && messages.length > 0) {
+                        var html = '';
+                        var unreadCount = 0;
+
+                        messages.forEach(function(msg) {
+                            if (!msg.isRead) unreadCount++;
+
+                            html += '<li class="notification-item ' + (msg.isRead ? '' : 'unread') + '">';
+                            html += '<a class="dropdown-item" href="@Url.Action("Messages", "Admin")">';
+                            html += '<div class="d-flex align-items-center">';
+                            html += '<div class="flex-shrink-0">';
+                            html += '<i class="fas fa-envelope ' + (msg.isRead ? 'text-muted' : 'text-primary') + '"></i>';
+                            html += '</div>';
+                            html += '<div class="flex-grow-1 ms-3">';
+                            html += '<div class="small"><strong>' + escapeHtml(msg.name) + '</strong> ' + (msg.isRead ? '' : '<span class="badge bg-warning">New</span>') + '</div>';
+                            html += '<div class="small text-muted">' + (msg.message ? msg.message.substring(0, 30) + '...' : 'No message') + '</div>';
+                            html += '<div class="small text-muted">' + new Date(msg.createdDate).toLocaleDateString() + '</div>';
+                            html += '</div>';
+                            html += '</div>';
+                            html += '</a></li>';
+                        });
+
+                        notificationList.html(html);
+                        notificationCount.text(unreadCount);
+
+                        if (unreadCount > 0) {
+                            notificationCount.show();
+                        } else {
+                            notificationCount.hide();
+                        }
+                    } else {
+                        notificationList.html('<li class="text-center py-3 text-muted">No notifications</li>');
+                        notificationCount.hide();
+                    }
+                },
+                error: function() {
+                    $('#notificationList').html('<li class="text-center py-3 text-danger">Error loading notifications</li>');
+                }
+            });
+        }
+
+        // Escape HTML to prevent XSS
+        function escapeHtml(unsafe) {
+            if (!unsafe) return '';
+            return unsafe
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        // Auto-hide alerts
+        $(document).ready(function() {
+            // Restore sidebar state
+            restoreSidebarState();
+
+            // Handle window resize
+            window.addEventListener('resize', handleResize);
+
+            // Update unread messages
+            updateUnreadMessages();
+
+            // Load notifications
+            loadNotifications();
+
+            // Refresh every 30 seconds
+            setInterval(function() {
+                updateUnreadMessages();
+                loadNotifications();
+            }, 30000);
+
+            // Auto-hide alerts after 5 seconds
+            setTimeout(function() {
+                $('.alert').fadeOut('slow');
+            }, 5000);
+
+            // Set active menu based on current URL
+            var currentUrl = window.location.pathname;
+            $('.sidebar-link').each(function() {
+                var href = $(this).attr('href');
+                if (href && (href === currentUrl || (href !== '/' && currentUrl.startsWith(href) && href !== '#'))) {
+                    $(this).addClass('active');
+                }
+            });
+
+            // Update profile photo if changed (from session)
+            var newPhoto = '@profilePhoto';
+            if (newPhoto && newPhoto !== $('#userAvatar').attr('src')) {
+                $('#userAvatar').attr('src', newPhoto);
+            }
+
+            // Close sidebar when clicking escape key
+            $(document).on('keydown', function(e) {
+                if (e.key === 'Escape' && isMobile()) {
+                    closeMobileSidebar();
+                }
+            });
+        });
+
+        // Close sidebar when clicking outside on mobile (handled by overlay)
+        // The overlay already has onclick="closeMobileSidebar()"
+    </script>
+
+    @RenderSection("Scripts", required: false)
+</body>
+</html>

@@ -1,0 +1,188 @@
+<div class="container-fluid py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2 class="text-dark fw-bold mb-0">
+        <i class="fas fa-images text-primary me-2"></i>Gallery Administration
+      </h2>
+      <p class="text-muted mb-0 small">Add images, videos, and certificates to show in your public profile portfolio.</p>
+    </div>
+    <button *ngIf="!showForm" (click)="onAddNew()" class="btn btn-primary rounded-pill px-4">
+      <i class="fas fa-plus me-1"></i> Add New Media
+    </button>
+    <button *ngIf="showForm" (click)="onCancel()" class="btn btn-outline-secondary rounded-pill px-3">
+      <i class="fas fa-arrow-left me-1"></i> Cancel Form
+    </button>
+  </div>
+
+  <div *ngIf="successMessage" class="alert alert-success rounded-3 small py-2 mb-4">{{ successMessage }}</div>
+  <div *ngIf="errorMessage" class="alert alert-danger rounded-3 small py-2 mb-4">{{ errorMessage }}</div>
+
+  <!-- Add/Edit Form -->
+  <div *ngIf="showForm" class="card border-0 shadow-sm rounded-4 p-4 mb-4">
+    <h5 class="text-dark fw-bold mb-4">{{ isEditMode ? 'Edit Media Details' : 'Upload New Media' }}</h5>
+    
+    <form (ngSubmit)="onSubmit()" #mediaForm="ngForm">
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label for="title" class="form-label fw-bold text-muted small">Media Title *</label>
+          <input type="text" id="title" name="title" class="form-control rounded-3" placeholder="e.g. Award Certificate" required [(ngModel)]="model.title">
+        </div>
+
+        <div class="col-md-6">
+          <label for="mediaType" class="form-label fw-bold text-muted small">Media Type *</label>
+          <select id="mediaType" name="mediaType" class="form-select rounded-3" required [(ngModel)]="model.mediaType">
+            <option value="Image">Image File</option>
+            <option value="Video">Video Link / Embed</option>
+            <option value="Document">PDF Document / Certificate</option>
+          </select>
+        </div>
+
+        <div class="col-md-6">
+          <label for="category" class="form-label fw-bold text-muted small">Category Name *</label>
+          <input type="text" id="category" name="category" list="catList" class="form-control rounded-3" placeholder="e.g. Achievements, Coding" required [(ngModel)]="model.category">
+          <datalist id="catList">
+            <option *ngFor="let cat of categories" [value]="cat"></option>
+          </datalist>
+        </div>
+
+        <div class="col-md-6">
+          <label for="tags" class="form-label fw-bold text-muted small">Tags (Comma separated)</label>
+          <input type="text" id="tags" name="tags" class="form-control rounded-3" placeholder="e.g. hackathon, python, web" [(ngModel)]="model.tags">
+        </div>
+
+        <!-- Dynamic inputs based on mediaType -->
+        <div class="col-12" *ngIf="model.mediaType === 'Image'">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label fw-bold text-muted small">Upload Image File *</label>
+              <input type="file" (change)="onImageFileSelected($event)" accept="image/*" class="form-control rounded-3" [required]="!isEditMode">
+            </div>
+            <div class="col-md-6" *ngIf="imagePreview">
+              <div class="border rounded p-2 text-center bg-light">
+                <img [src]="imagePreview" class="img-fluid rounded" style="max-height: 120px; object-fit: contain;">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-12" *ngIf="model.mediaType === 'Document'">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label fw-bold text-muted small">Upload PDF/Document File *</label>
+              <input type="file" (change)="onDocFileSelected($event)" accept=".pdf,.doc,.docx" class="form-control rounded-3" [required]="!isEditMode">
+            </div>
+          </div>
+        </div>
+
+        <div class="col-12" *ngIf="model.mediaType === 'Video'">
+          <label for="videoEmbedCode" class="form-label fw-bold text-muted small">Video Embed Code (iframe/youtube link) *</label>
+          <textarea id="videoEmbedCode" name="videoEmbedCode" class="form-control rounded-3 font-monospace" rows="3" placeholder="e.g. https://www.youtube.com/embed/dQw4w9WgXcQ" required [(ngModel)]="model.videoEmbedCode"></textarea>
+        </div>
+
+        <div class="col-12">
+          <label for="description" class="form-label fw-bold text-muted small">Description / Subtitle</label>
+          <textarea id="description" name="description" class="form-control rounded-3" rows="3" placeholder="Enter a brief details..." [(ngModel)]="model.description"></textarea>
+        </div>
+
+        <div class="col-md-4">
+          <label for="displayOrder" class="form-label fw-bold text-muted small">Display Order</label>
+          <input type="number" id="displayOrder" name="displayOrder" class="form-control rounded-3" [(ngModel)]="model.displayOrder">
+        </div>
+
+        <div class="col-md-4 d-flex align-items-center">
+          <div class="form-check form-switch mt-4">
+            <input type="checkbox" id="isFeatured" name="isFeatured" class="form-check-input" [(ngModel)]="model.isFeatured">
+            <label for="isFeatured" class="form-check-label fw-bold text-muted small">Featured Item</label>
+          </div>
+        </div>
+
+        <div class="col-md-4 d-flex align-items-center">
+          <div class="form-check form-switch mt-4">
+            <input type="checkbox" id="isActive" name="isActive" class="form-check-input" [(ngModel)]="model.isActive">
+            <label for="isActive" class="form-check-label fw-bold text-muted small">Is Active</label>
+          </div>
+        </div>
+
+        <div class="col-12 d-flex gap-2 mt-4">
+          <button type="submit" [disabled]="mediaForm.invalid || isSaving" class="btn btn-primary rounded-pill px-4">
+            <span *ngIf="isSaving" class="spinner-border spinner-border-sm me-2"></span>
+            {{ isEditMode ? 'Save Changes' : 'Upload Media' }}
+          </button>
+          <button type="button" (click)="onCancel()" class="btn btn-outline-secondary rounded-pill px-3">
+            Cancel
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <!-- Media list Grid -->
+  <div *ngIf="!showForm" class="card border-0 shadow-sm rounded-4 p-4">
+    <div *ngIf="isLoading" class="text-center py-5">
+      <div class="spinner-border text-primary" role="status"></div>
+    </div>
+
+    <div *ngIf="!isLoading">
+      <div class="table-responsive" *ngIf="items.length > 0">
+        <table class="table table-hover align-middle">
+          <thead>
+            <tr class="small text-muted text-uppercase">
+              <th style="width: 80px;">Thumbnail</th>
+              <th>Title / Description</th>
+              <th>Type</th>
+              <th>Category</th>
+              <th>Order</th>
+              <th>Featured</th>
+              <th>Status</th>
+              <th class="text-end">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of items">
+              <td>
+                <div class="bg-light border rounded overflow-hidden" style="width: 50px; height: 50px; display: flex; align-items: center; justify-content: center;">
+                  <img *ngIf="item.mediaType === 'Image' && item.mediaPath" [src]="'http://localhost:5154' + item.mediaPath" style="width: 100%; height: 100%; object-fit: cover;">
+                  <i *ngIf="item.mediaType === 'Video'" class="fas fa-video fa-lg text-danger"></i>
+                  <i *ngIf="item.mediaType === 'Document'" class="fas fa-file-pdf fa-lg text-primary"></i>
+                </div>
+              </td>
+              <td>
+                <div class="d-flex flex-column">
+                  <span class="text-dark fw-bold">{{ item.title }}</span>
+                  <span class="text-muted small" style="font-size: 11px;">{{ item.description || 'No description' }}</span>
+                </div>
+              </td>
+              <td>
+                <span class="badge bg-secondary-subtle text-secondary">{{ item.mediaType }}</span>
+              </td>
+              <td>{{ item.category }}</td>
+              <td>{{ item.displayOrder }}</td>
+              <td>
+                <span *ngIf="item.isFeatured" class="badge bg-success-subtle text-success">Yes</span>
+                <span *ngIf="!item.isFeatured" class="badge bg-light text-muted border">No</span>
+              </td>
+              <td>
+                <span class="badge" [ngClass]="item.isActive ? 'bg-success-subtle text-success' : 'bg-secondary-subtle text-secondary'">
+                  {{ item.isActive ? 'Active' : 'Inactive' }}
+                </span>
+              </td>
+              <td class="text-end">
+                <button (click)="onEdit(item)" class="btn btn-sm btn-outline-primary rounded-circle me-1" title="Edit">
+                  <i class="fas fa-edit"></i>
+                </button>
+                <button (click)="onDelete(item.galleryId)" class="btn btn-sm btn-outline-danger rounded-circle" title="Delete">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div *ngIf="items.length === 0" class="text-center py-5">
+        <i class="fas fa-photo-video fa-3x text-muted opacity-25 mb-3"></i>
+        <p class="text-muted mb-0">No gallery items uploaded yet.</p>
+      </div>
+    </div>
+  </div>
+</div>

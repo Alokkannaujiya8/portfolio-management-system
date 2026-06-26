@@ -1,0 +1,50 @@
+<footer class="footer">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-4 mb-4">
+        <h5 class="mb-4"><i class="fas fa-code me-2"></i>{{ profile?.name || 'Portfolio' }}</h5>
+        <p class="text-white-50">{{ shortDescription() }}</p>
+        <div class="social-links">
+          <a [href]="profile?.gitHub || '#'" target="_blank"><i class="fab fa-github"></i></a>
+          <a [href]="profile?.linkedIn || '#'" target="_blank"><i class="fab fa-linkedin-in"></i></a>
+          <a href="#"><i class="fab fa-twitter"></i></a>
+          <a href="#"><i class="fab fa-instagram"></i></a>
+        </div>
+      </div>
+      <div class="col-lg-2 mb-4">
+        <h5 class="mb-4">Quick Links</h5>
+        <ul class="list-unstyled">
+          <li class="mb-2"><a href="#home" class="text-white-50 text-decoration-none">Home</a></li>
+          <li class="mb-2"><a href="#about" class="text-white-50 text-decoration-none">About</a></li>
+          <li class="mb-2"><a href="#skills" class="text-white-50 text-decoration-none">Skills</a></li>
+          <li class="mb-2"><a href="#projects" class="text-white-50 text-decoration-none">Projects</a></li>
+          <li class="mb-2"><a routerLink="/blog" class="text-white-50 text-decoration-none">Blog</a></li>
+        </ul>
+      </div>
+      <div class="col-lg-3 mb-4">
+        <h5 class="mb-4">Contact Info</h5>
+        <ul class="list-unstyled">
+          <li class="mb-3"><i class="fas fa-map-marker-alt me-2 text-primary"></i> {{ profile?.address || 'New York, USA' }}</li>
+          <li class="mb-3"><i class="fas fa-phone me-2 text-primary"></i> {{ profile?.phone || '+1 234 567 890' }}</li>
+          <li class="mb-3"><i class="fas fa-envelope me-2 text-primary"></i> {{ profile?.email || 'hello@portfolio.com' }}</li>
+        </ul>
+      </div>
+      <div class="col-lg-3 mb-4">
+        <h5 class="mb-4">Newsletter</h5>
+        <p class="text-white-50">Subscribe for latest updates</p>
+        <div class="input-group">
+          <input type="email" class="form-control bg-transparent text-white border-white" placeholder="Your Email">
+          <button class="btn btn-primary" type="button"><i class="fas fa-paper-plane"></i></button>
+        </div>
+      </div>
+    </div>
+    <hr class="border-white-10">
+    <div class="d-flex justify-content-between align-items-center flex-wrap mt-4">
+      <p class="text-white-50 mb-0">&copy; {{ currentYear }} {{ profile?.name || 'Portfolio' }}. All rights reserved.</p>
+      <button (click)="toggleTheme()" class="btn btn-outline-light rounded-pill px-3 py-1 text-white-50 btn-sm mt-2 mt-md-0">
+        <i class="fas" [ngClass]="isDarkMode ? 'fa-sun text-warning' : 'fa-moon text-info'"></i> 
+        {{ isDarkMode ? 'Light Mode' : 'Dark Mode' }}
+      </button>
+    </div>
+  </div>
+</footer>

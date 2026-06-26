@@ -1,0 +1,649 @@
+﻿@model HomeViewModel
+@{
+    ViewData["Title"] = "Home";
+    var profile = Model.Profile;
+    var skills = Model.Skills ?? new List<SkillModel>();
+    var projects = Model.Projects ?? new List<ProjectModel>();
+    var experience = Model.Experience ?? new List<ExperienceModel>();
+    var education = Model.Education ?? new List<EducationModel>();
+    var blogPosts = Model.BlogPosts ?? new List<BlogPostModel>();
+    var totalExperienceDetail = ExperienceModel.GetTotalExperienceDetail(experience);
+
+}
+
+<!-- Link to external CSS -->
+<link rel="stylesheet" href="~/css/home.css" />
+
+<!-- ========== HERO SECTION ========== -->
+<section id="home" class="hero-section">
+    <div class="container">
+        <div class="row align-items-center min-vh-100">
+            <div class="col-lg-8 mx-auto text-center text-white">
+                <div class="hero-badge mb-4" data-aos="fade-down">
+                    <span class="badge bg-white text-primary px-4 py-2 rounded-pill">
+                        <i class="fas fa-code me-2"></i>Welcome to My Portfolio
+                    </span>
+                </div>
+
+                <h1 class="display-3 fw-bold mb-4" data-aos="fade-up">
+                    Hi, I'm <span class="text-warning hero-name">@(profile?.Name ?? "Your Name")</span>
+                </h1>
+
+                <div class="typing-container mb-4" data-aos="fade-up" data-aos-delay="100">
+                    <h2 class="h3">I'm a <span class="text-warning" id="typing-text"></span></h2>
+                </div>
+
+                <p class="lead mb-5 mx-auto" style="max-width: 700px;" data-aos="fade-up" data-aos-delay="200">
+                    @(profile?.Description ?? "Creating amazing digital experiences with cutting-edge technology")
+                </p>
+
+                <div class="hero-buttons" data-aos="fade-up" data-aos-delay="300">
+                    <a href="#contact" class="btn btn-warning btn-lg px-5 py-3 me-3 mb-2">
+                        <i class="fas fa-paper-plane me-2"></i>Hire Me
+                    </a>
+                    <a href="/Resume/ViewResume" class="btn btn-outline-light btn-lg px-5 py-3 mb-2">
+                        <i class="fas fa-download me-2"></i>Download CV
+                    </a>
+                </div>
+
+                <div class="hero-social mt-5" data-aos="fade-up" data-aos-delay="400">
+                    @if (!string.IsNullOrEmpty(profile?.LinkedIn))
+                    {
+                        <a href="@profile.LinkedIn" target="_blank" class="social-icon me-3">
+                            <i class="fab fa-linkedin-in"></i>
+                        </a>
+                    }
+                    @if (!string.IsNullOrEmpty(profile?.GitHub))
+                    {
+                        <a href="@profile.GitHub" target="_blank" class="social-icon me-3">
+                            <i class="fab fa-github"></i>
+                        </a>
+                    }
+                    <a href="#" class="social-icon me-3"><i class="fab fa-twitter"></i></a>
+                    <a href="#" class="social-icon"><i class="fab fa-instagram"></i></a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scroll Down Indicator -->
+    <div class="scroll-down">
+        <a href="#about" class="text-white">
+            <span>Scroll Down</span>
+            <i class="fas fa-chevron-down"></i>
+        </a>
+    </div>
+</section>
+
+<!-- ========== ABOUT SECTION ========== -->
+<section id="about" class="py-5 bg-light">
+    <div class="container py-5">
+        <div class="text-center mb-5" data-aos="fade-up">
+            <span class="section-subtitle">Get to Know Me</span>
+            <h2 class="section-title">About Me</h2>
+            <div class="title-underline"></div>
+        </div>
+
+        <div class="row align-items-center g-5">
+            <div class="col-lg-5" data-aos="fade-right">
+                <div class="about-image position-relative">
+                    <div class="image-border"></div>
+                    <img src="@(profile?.Photo ?? "/images/default-avatar.jpg")" alt="@(profile?.Name ?? "Profile")" class="img-fluid rounded-4 shadow-lg position-relative" id="profileImage">
+
+                    <div class="experience-card bg-white p-4 rounded-4 shadow-lg">
+                        <div class="d-flex align-items-center">
+                           
+
+                            @{
+                                var totalDetail = ExperienceModel.GetTotalExperienceDetail(Model.Experience);
+                            }
+                             <div class="experience-icon bg-primary text-white rounded-circle me-3">
+                                        <i class="fas fa-briefcase"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-primary mb-0">@totalDetail.Years+</h3>
+                                        <p class="text-muted mb-0">Total Experience</p>
+                                        <small class="text-muted">@totalDetail.Formatted</small>
+                                    </div>
+                              
+                        </div>
+                    </div>
+
+                    <div class="project-card-completed bg-white p-4 rounded-4 shadow-lg">
+                        <div class="d-flex align-items-center">
+                            <div class="project-icon bg-success text-white rounded-circle me-3">
+                                <i class="fas fa-rocket"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-success mb-0">@(projects.Count())</h3>
+                                <p class="text-muted mb-0">Projects Done</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-7" data-aos="fade-left">
+                <h3 class="mb-3">I'm <span class="text-primary">@(profile?.Name ?? "Your Name")</span></h3>
+                <h4 class="text-secondary mb-4">@(profile?.Title ?? "Professional Title")</h4>
+
+                <div class="about-text mb-4">
+                    <p class="lead">@Html.Raw((profile?.Description ?? "Description here").Replace("\n", "<br>"))</p>
+                </div>
+
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <div class="info-item d-flex">
+                            <div class="info-icon me-3">
+                                <i class="fas fa-envelope text-primary"></i>
+                            </div>
+                            <div>
+                                <small class="text-muted">Email</small>
+                                <h6 style="font-size: 12px;" class="mb-0">@(profile?.Email ?? "email@example.com")</h6>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="info-item d-flex">
+                            <div class="info-icon me-3">
+                                <i class="fas fa-phone text-primary"></i>
+                            </div>
+                            <div>
+                                <small class="text-muted">Phone</small>
+                                <h6 class="mb-0">@(profile?.Phone ?? "+1 234 567 890")</h6>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="info-item d-flex">
+                            <div class="info-icon me-3">
+                                <i class="fas fa-map-marker-alt text-primary"></i>
+                            </div>
+                            <div>
+                                <small class="text-muted">Location</small>
+                                <h6 class="mb-0">@(profile?.Address ?? "New York, USA")</h6>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="info-item d-flex">
+                            <div class="info-icon me-3">
+                                <i class="fas fa-globe text-primary"></i>
+                            </div>
+                            <div>
+                                <small class="text-muted">Freelance</small>
+                                <h6 class="mb-0">Available</h6>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex gap-3">
+                    <a href="#contact" class="btn btn-primary px-4 py-2">
+                        <i class="fas fa-paper-plane me-2"></i>Contact Me
+                    </a>
+                    <a href="/Resume/ViewResume" class="btn btn-outline-primary px-4 py-2">
+                        <i class="fas fa-download me-2"></i>Download Resume
+                    </a>
+                </div>
+            </div>
+        </div>
+
+
+        @if (Model.Experience != null && Model.Experience.Any(e => e.IsActive))
+        {
+            <div class="mb-4">
+                <h6 class="mb-2">📌 Work History</h6>
+                <div class="list-group list-group-flush">
+                    @foreach (var exp in Model.Experience.Where(e => e.IsActive).OrderByDescending(e => e.StartDate))
+                    {
+                        <div class="list-group-item px-0">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <span class="fw-bold">@exp.Role</span>
+                                    <span class="text-muted mx-2">@exp.CompanyName</span>
+                                    <div class="small text-muted">
+                                        <i class="far fa-calendar me-1"></i>@exp.SimpleDuration
+                                        <span class="ms-2 badge bg-secondary">@exp.Duration</span>
+                                    </div>
+                                </div>
+                                <span class="badge bg-light text-dark">@exp.TotalMonths months</span>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+</section>
+<section id="experience" class="py-5">
+    <div class="container py-5">
+        <div class="text-center mb-5" data-aos="fade-up">
+            <span class="section-subtitle">My Professional Journey</span>
+            <h2 class="section-title">Work Experience</h2>
+            <div class="title-underline"></div>
+        </div>
+
+        @if (experience != null && experience.Any())
+        {
+            <div class="row justify-content-center">
+                <div class="col-lg-8">
+                    <div class="timeline">
+                        @foreach (var exp in experience)
+                        {
+                            <div class="timeline-item" data-aos="fade-up">
+                                <div class="timeline-dot"></div>
+                                <div class="timeline-date">
+                                    <span class="badge bg-primary">
+                                        @exp.SimpleDuration
+                                    </span>
+                                    <span class="badge bg-secondary ms-2">
+                                        @exp.Duration
+                                    </span>
+                                </div>
+                                <div class="timeline-content card border-0 shadow-sm">
+                                    <div class="card-body p-4">
+                                        <h4 class="mb-2">@exp.Role</h4>
+                                        <h5 class="text-primary mb-3">@exp.CompanyName</h5>
+                                        <p class="text-muted mb-0">@exp.Description</p>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="text-center py-5" data-aos="fade-up">
+                <i class="fas fa-briefcase fa-4x text-muted mb-3"></i>
+                <h4 class="text-muted">No experience added yet</h4>
+            </div>
+        }
+    </div>
+</section>
+
+<!-- ========== SKILLS SECTION ========== -->
+<section id="skills" class="py-5">
+    <div class="container py-5">
+        <div class="text-center mb-5" data-aos="fade-up">
+            <span class="section-subtitle">What I'm Good At</span>
+            <h2 class="section-title">My Skills</h2>
+            <div class="title-underline"></div>
+        </div>
+
+        @if (skills.Any())
+        {
+            <div class="row">
+                @foreach (var skill in skills)
+                {
+                    <div class="col-lg-6 mb-4" data-aos="fade-up">
+                        <div class="skill-card">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h5 class="mb-0">@skill.SkillName</h5>
+                                <span class="skill-percentage text-primary fw-bold">@skill.Percentage%</span>
+                            </div>
+                            <div class="progress skill-progress">
+                                <div class="progress-bar skill-progress-bar"
+                                     role="progressbar"
+                                     style="width: @skill.Percentage%"
+                                     aria-valuenow="@skill.Percentage"
+                                     aria-valuemin="0"
+                                     aria-valuemax="100">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="text-center py-5" data-aos="fade-up">
+                <i class="fas fa-chart-bar fa-4x text-muted mb-3"></i>
+                <h4 class="text-muted">No skills added yet</h4>
+            </div>
+        }
+    </div>
+</section>
+
+<!-- ========== PROJECTS SECTION ========== -->
+<section id="projects" class="py-5 bg-light">
+    <div class="container py-5">
+        <div class="text-center mb-5" data-aos="fade-up">
+            <span class="section-subtitle">My Recent Work</span>
+            <h2 class="section-title">Projects</h2>
+            <div class="title-underline"></div>
+        </div>
+
+        @if (projects.Any())
+        {
+            <div class="row g-4">
+                @foreach (var project in projects)
+                {
+                    <div class="col-lg-4 col-md-6" data-aos="fade-up">
+                        <div class="project-card h-100">
+                            <div class="project-img-wrapper">
+                                <img src="@(project.ImagePath ?? "/images/project-default.jpg")"
+                                     class="project-img"
+                                     alt="@project.ProjectName">
+                                <div class="project-overlay">
+                                    <div class="project-links">
+                                        @if (!string.IsNullOrEmpty(project.LiveLink))
+                                        {
+                                            <a href="@project.LiveLink" target="_blank" class="project-link live">
+                                                <i class="fas fa-external-link-alt"></i>
+                                            </a>
+                                        }
+                                        @if (!string.IsNullOrEmpty(project.GitHubLink))
+                                        {
+                                            <a href="@project.GitHubLink" target="_blank" class="project-link github">
+                                                <i class="fab fa-github"></i>
+                                            </a>
+                                        }
+                                </div>
+                            </div>
+                        </div>
+                        <div class="project-info p-4">
+                            <h4 class="project-title">@project.ProjectName</h4>
+                            <p class="project-description text-muted">
+                                @(project.Description?.Length > 100
+                                                            ? project.Description.Substring(0, 100) + "..."
+                                                            : project.Description)
+                        </p>
+                    </div>
+                </div>
+            </div>
+                        }
+            </div>
+        }
+        else
+        {
+            <div class="text-center py-5" data-aos="fade-up">
+                <i class="fas fa-project-diagram fa-4x text-muted mb-3"></i>
+                <h4 class="text-muted">No projects added yet</h4>
+            </div>
+        }
+    </div>
+</section>
+<!-- ========== EDUCATION SECTION ========== -->
+<section id="education" class="py-5 bg-light">
+    <div class="container py-5">
+        <div class="text-center mb-5" data-aos="fade-up">
+            <span class="section-subtitle">My Academic Background</span>
+            <h2 class="section-title">Education</h2>
+            <div class="title-underline"></div>
+        </div>
+
+        @if (education.Any())
+        {
+            <div class="row g-4">
+                @foreach (var edu in education)
+                {
+                    <div class="col-md-6" data-aos="fade-up">
+                        <div class="education-card card border-0 shadow-sm h-100">
+                            <div class="card-body p-4">
+                                <div class="d-flex">
+                                    <div class="education-icon me-4">
+                                        <i class="fas fa-graduation-cap fa-3x text-primary"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="mb-2">@edu.Degree</h4>
+                                        <h5 class="text-primary mb-3">@edu.Institute</h5>
+                                        <div class="d-flex gap-3">
+                                            <span class="badge bg-light text-dark">
+                                                <i class="far fa-calendar me-1"></i> @edu.Year
+                                            </span>
+                                            @if (edu.Percentage.HasValue)
+                                            {
+                                                <span class="badge bg-light text-dark">
+                                                    <i class="fas fa-star me-1"></i> @edu.Percentage.Value%
+                                                </span>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="text-center py-5" data-aos="fade-up">
+                <i class="fas fa-graduation-cap fa-4x text-muted mb-3"></i>
+                <h4 class="text-muted">No education added yet</h4>
+            </div>
+        }
+    </div>
+</section>
+
+<!-- ========== BLOG SECTION ========== -->
+<section id="blog" class="py-5">
+    <div class="container py-5">
+        <div class="text-center mb-5" data-aos="fade-up">
+            <span class="section-subtitle">Latest Articles</span>
+            <h2 class="section-title">From My Blog</h2>
+            <div class="title-underline"></div>
+        </div>
+
+        @if (blogPosts.Any())
+        {
+            <div class="row g-4">
+                @foreach (var post in blogPosts)
+                {
+                    <div class="col-lg-4 col-md-6" data-aos="fade-up">
+                        <div class="blog-card h-100">
+                            <div class="blog-img-wrapper">
+                                <img src="@(post.FeaturedImage ?? "/images/blog-default.jpg")"
+                                     class="blog-img"
+                                     alt="@post.Title">
+                                <div class="blog-category">
+                                    <span class="badge bg-primary">@(post.Category?.CategoryName ?? "Blog")</span>
+                                </div>
+                            </div>
+                            <div class="blog-info p-4">
+                                <div class="blog-meta d-flex gap-3 mb-3">
+                                    <span class="text-muted small">
+                                        <i class="far fa-calendar me-1"></i>@post.CreatedDate.ToString("MMM dd, yyyy")
+                                    </span>
+                                    <span class="text-muted small">
+                                        <i class="far fa-clock me-1"></i>@post.ReadingTime
+                                    </span>
+                                </div>
+                                <h4 class="blog-title mb-3">@post.Title</h4>
+                                <p class="blog-excerpt text-muted mb-3">
+                                    @(post.Excerpt ?? (post.Content?.Length > 100
+                                                                ? post.Content.Substring(0, 100) + "..."
+                                                                : post.Content))
+                        </p>
+                        <a href="/Blog/Post/@post.Slug" class="btn btn-link text-primary p-0">
+                            Read More <i class="fas fa-arrow-right ms-2"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+                        }
+            </div>
+
+            <div class="text-center mt-5" data-aos="fade-up">
+                <a href="/Blog" class="btn btn-outline-primary btn-lg px-5">
+                    View All Posts <i class="fas fa-arrow-right ms-2"></i>
+                </a>
+            </div>
+        }
+        else
+        {
+            <div class="text-center py-5" data-aos="fade-up">
+                <i class="fas fa-blog fa-4x text-muted mb-3"></i>
+                <h4 class="text-muted">No blog posts yet</h4>
+            </div>
+        }
+    </div>
+</section>
+
+<!-- ========== CONTACT SECTION ========== -->
+<section id="contact" class="py-5 bg-light">
+    <div class="container py-5">
+        <div class="text-center mb-5" data-aos="fade-up">
+            <span class="section-subtitle">Get In Touch</span>
+            <h2 class="section-title">Contact Me</h2>
+            <div class="title-underline"></div>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-lg-4" data-aos="fade-right">
+                <div class="contact-info-card bg-white p-4 rounded-4 shadow-sm mb-4">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="contact-icon bg-primary bg-opacity-10 p-3 rounded-3 me-3">
+                            <i class="fas fa-map-marker-alt fa-2x text-primary"></i>
+                        </div>
+                        <div>
+                            <h6 class="text-muted mb-1">Location</h6>
+                            <h5 class="mb-0">@(profile?.Address ?? "New York, USA")</h5>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="contact-info-card bg-white p-4 rounded-4 shadow-sm mb-4">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="contact-icon bg-success bg-opacity-10 p-3 rounded-3 me-3">
+                            <i class="fas fa-envelope fa-2x text-success"></i>
+                        </div>
+                        <div>
+                            <h6 class="text-muted mb-1">Email</h6>
+                            <h5 style="font-size: 12px;" class="mb-0">@(profile?.Email ?? "hello@portfolio.com")</h5>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="contact-info-card bg-white p-4 rounded-4 shadow-sm">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="contact-icon bg-info bg-opacity-10 p-3 rounded-3 me-3">
+                            <i class="fas fa-phone fa-2x text-info"></i>
+                        </div>
+                        <div>
+                            <h6 class="text-muted mb-1">Phone</h6>
+                            <h5 class="mb-0">@(profile?.Phone ?? "+1 234 567 890")</h5>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-8" data-aos="fade-left">
+                <div class="contact-form-card bg-white p-5 rounded-4 shadow-sm">
+                    <h3 class="mb-4">Send Me a Message</h3>
+                    <form id="contactForm">
+                        @Html.AntiForgeryToken()
+                        <div class="row g-4">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label">Your Name</label>
+                                    <input type="text" class="form-control form-control-lg" id="name" name="Name" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label">Your Email</label>
+                                    <input type="email" class="form-control form-control-lg" id="email" name="Email" required>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="form-group">
+                                    <label class="form-label">Subject</label>
+                                    <input type="text" class="form-control form-control-lg" id="subject" name="Subject">
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="form-group">
+                                    <label class="form-label">Your Message</label>
+                                    <textarea class="form-control form-control-lg" id="message" name="Message" rows="5" required></textarea>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <button type="submit" class="btn btn-primary btn-lg px-5 py-3" id="submitBtn">
+                                    <span class="spinner-border spinner-border-sm d-none me-2" role="status"></span>
+                                    <span class="btn-text">Send Message <i class="fas fa-paper-plane ms-2"></i></span>
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/typed.js@2.0.12"></script>
+
+    <script>
+        // Simple initialization
+        AOS.init({ duration: 1000, once: true });
+
+        new Typed('#typing-text', {
+            strings: ['@(profile?.Title ?? "Full Stack Developer | ASP.NET Core | SQL Server | AI/ML")', '.NET Full Stack Developer & AI/ML Engineer','Full Stack Developer (ASP.NET Core) | Machine Learning Enthusiast', 'Problem Solver', 'Creative Thinker'],
+            typeSpeed: 50,
+            backSpeed: 30,
+            loop: true
+        });
+
+        // Contact form
+                    $('#contactForm').on('submit', function(e) {
+            e.preventDefault();
+
+            var submitBtn = $('#submitBtn');
+            var spinner = submitBtn.find('.spinner-border');
+            var btnText = submitBtn.find('.btn-text');
+
+            // ✅ CORRECT - Using camelCase
+            var formData = {
+                name: $('#name').val(),
+                email: $('#email').val(),
+                subject: $('#subject').val(),
+                message: $('#message').val()
+            };
+
+            var token = $('input[name="__RequestVerificationToken"]').val();
+
+            console.log("Sending data:", formData); // Debug log
+
+            submitBtn.prop('disabled', true);
+            spinner.removeClass('d-none');
+            btnText.text('Sending...');
+
+            $.ajax({
+                url: '/Home/SendMessage',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(formData),
+                headers: {
+                    'RequestVerificationToken': token,
+                    'Accept': 'application/json'
+                },
+                success: function(response) {
+                    console.log("Response:", response); // Debug log
+                    if (response.success) {
+                        $('#contactForm')[0].reset();
+                        showToast('success', response.message);
+                    } else {
+                        showToast('error', response.message);
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error("Error:", xhr.responseText); // Debug log
+                    var errorMsg = xhr.responseJSON?.message || 'An error occurred. Please try again.';
+                    showToast('error', errorMsg);
+                },
+                complete: function() {
+                    submitBtn.prop('disabled', false);
+                    spinner.addClass('d-none');
+                    btnText.html('Send Message <i class="fas fa-paper-plane ms-2"></i>');
+                }
+            });
+        });
+    </script>
+}

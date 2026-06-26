@@ -1,0 +1,146 @@
+<div class="container-fluid py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2 class="text-dark fw-bold mb-0">
+        <i class="fas fa-chart-line text-primary me-2"></i>Analytics & Access Logs
+      </h2>
+      <p class="text-muted mb-0 small">Monitor real-time visitors and tracking statistics.</p>
+    </div>
+  </div>
+
+  <!-- Search & Tab Filter Header -->
+  <div class="row g-3 align-items-center mb-4">
+    <div class="col-md-6">
+      <ul class="nav nav-pills gap-2">
+        <li class="nav-item">
+          <button class="btn btn-pill py-2 px-4 fw-bold" [class.btn-primary]="activeTab === 'visitors'" [class.btn-light]="activeTab !== 'visitors'" (click)="switchTab('visitors')">
+            <i class="fas fa-users me-2"></i>Visitor Tracking
+          </button>
+        </li>
+        <li class="nav-item">
+          <button class="btn btn-pill py-2 px-4 fw-bold" [class.btn-primary]="activeTab === 'downloads'" [class.btn-light]="activeTab !== 'downloads'" (click)="switchTab('downloads')">
+            <i class="fas fa-file-download me-2"></i>Resume Downloads
+          </button>
+        </li>
+      </ul>
+    </div>
+    <div class="col-md-6">
+      <div class="input-group rounded-pill overflow-hidden border shadow-sm">
+        <span class="input-group-text bg-white border-0"><i class="fas fa-search text-muted"></i></span>
+        <input type="text" [(ngModel)]="searchTerm" class="form-control border-0 py-2" [placeholder]="activeTab === 'visitors' ? 'Filter by IP, City, Country or ISP...' : 'Filter by Name, Email, Company, IP, Location...'">
+      </div>
+    </div>
+  </div>
+
+  <!-- Logs Table Card -->
+  <div class="card border-0 shadow-sm rounded-4 p-4">
+    <div *ngIf="isLoading" class="text-center py-5">
+      <div class="spinner-border text-primary" role="status"></div>
+      <p class="text-muted mt-2 small">Fetching logs data...</p>
+    </div>
+
+    <div *ngIf="!isLoading">
+      
+      <!-- 1. Visitor Logs -->
+      <div *ngIf="activeTab === 'visitors'">
+        <div class="table-responsive">
+          <table class="table table-hover align-middle">
+            <thead>
+              <tr class="small text-muted text-uppercase">
+                <th>IP Address</th>
+                <th>Location / ISP</th>
+                <th>First Visit</th>
+                <th>Last Visit</th>
+                <th>Visit Count</th>
+                <th>Pages Visited</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let log of getFilteredVisitorLogs()">
+                <td>
+                  <strong>{{ log.ipAddress || 'Unknown' }}</strong>
+                  <div class="text-muted small" style="font-size: 10px;">Session: {{ log.sessionId | slice:0:8 }}...</div>
+                </td>
+                <td>
+                  <div class="d-flex flex-column">
+                    <span>
+                      <i class="fas fa-map-marker-alt text-danger me-1"></i>
+                      {{ log.city || 'Unknown' }}, {{ log.region || 'Unknown' }}, {{ log.country || 'Unknown' }}
+                    </span>
+                    <span class="text-muted small" style="font-size: 11px;">
+                      <i class="fas fa-network-wired text-muted me-1"></i>
+                      {{ log.isp || log.organization || 'Unknown ISP' }}
+                    </span>
+                  </div>
+                </td>
+                <td class="small">{{ log.firstVisit | date:'MMM dd, yyyy HH:mm' }}</td>
+                <td class="small">{{ log.lastVisit | date:'MMM dd, yyyy HH:mm' }}</td>
+                <td>
+                  <span class="badge bg-primary-subtle text-primary rounded-pill px-3">{{ log.visitCount || 1 }}</span>
+                </td>
+                <td class="text-muted small" style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" [title]="log.pagesVisited">
+                  {{ log.pagesVisited || '/' }}
+                </td>
+              </tr>
+              <tr *ngIf="getFilteredVisitorLogs().length === 0">
+                <td colspan="6" class="text-center text-muted py-4">No matching visitor logs found.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 2. Resume Download Logs -->
+      <div *ngIf="activeTab === 'downloads'">
+        <div class="table-responsive">
+          <table class="table table-hover align-middle">
+            <thead>
+              <tr class="small text-muted text-uppercase">
+                <th>Visitor Info</th>
+                <th>Organization</th>
+                <th>IP / Location</th>
+                <th>Date / Time</th>
+                <th>Downloaded</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let log of getFilteredDownloadLogs()">
+                <td>
+                  <div class="d-flex flex-column">
+                    <span class="text-dark fw-bold">{{ log.visitorName }}</span>
+                    <span class="text-muted small" style="font-size: 11px;">{{ log.visitorEmail }}</span>
+                  </div>
+                </td>
+                <td>
+                  <div class="d-flex flex-column">
+                    <span>{{ log.companyName }}</span>
+                    <span class="text-muted small" style="font-size: 11px;">{{ log.designation }}</span>
+                  </div>
+                </td>
+                <td>
+                  <div class="d-flex flex-column">
+                    <span>{{ log.ipAddress }}</span>
+                    <span class="text-muted small" style="font-size: 11px;">
+                      <i class="fas fa-map-marker-alt text-danger me-1"></i>
+                      {{ log.city || 'Unknown' }}, {{ log.country || 'Unknown' }}
+                    </span>
+                  </div>
+                </td>
+                <td class="small">{{ log.downloadDate | date:'MMM dd, yyyy HH:mm' }}</td>
+                <td>
+                  <span class="badge" [ngClass]="log.isDownloaded ? 'bg-success-subtle text-success' : 'bg-warning-subtle text-warning'">
+                    {{ log.isDownloaded ? 'Yes' : 'No' }}
+                  </span>
+                </td>
+              </tr>
+              <tr *ngIf="getFilteredDownloadLogs().length === 0">
+                <td colspan="5" class="text-center text-muted py-4">No matching download logs found.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>

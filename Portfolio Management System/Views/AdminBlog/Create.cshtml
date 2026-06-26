@@ -1,0 +1,399 @@
+﻿@model BlogPostModel
+@{
+    ViewData["Title"] = "Create Blog Post";
+    Layout = "_AdminLayout";
+    var categories = ViewBag.Categories as List<BlogCategoryModel> ?? new List<BlogCategoryModel>();
+}
+
+<style>
+    /* Simple Editor Styles */
+    .editor-toolbar {
+        background: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-bottom: none;
+        padding: 8px;
+        border-radius: 8px 8px 0 0;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 5px;
+    }
+
+        .editor-toolbar button {
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 6px 12px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+            .editor-toolbar button:hover {
+                background: #e9ecef;
+                border-color: #adb5bd;
+            }
+
+            .editor-toolbar button i {
+                margin-right: 4px;
+            }
+
+    #content {
+        font-family: 'Courier New', monospace;
+        font-size: 14px;
+        line-height: 1.6;
+        border-radius: 0 0 8px 8px;
+        border-color: #dee2e6;
+    }
+
+    .preview-panel {
+        margin-top: 15px;
+        border: 1px dashed #dee2e6;
+        border-radius: 8px;
+        padding: 15px;
+        background: #f8f9fa;
+    }
+
+        .preview-panel h6 {
+            margin-bottom: 10px;
+            color: #6c757d;
+        }
+
+    .preview-content {
+        background: white;
+        padding: 15px;
+        border-radius: 4px;
+        min-height: 100px;
+        max-height: 300px;
+        overflow-y: auto;
+    }
+</style>
+
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fas fa-plus-circle me-2"></i>Create Blog Post</h2>
+        <a href="@Url.Action("Index", "AdminBlog")" class="btn btn-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Back to List
+        </a>
+    </div>
+
+    <form asp-action="Create" method="post" enctype="multipart/form-data">
+        @Html.AntiForgeryToken()
+
+        <div class="row">
+            <!-- Main Content -->
+            <div class="col-lg-8">
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0">Post Content</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label asp-for="Title" class="form-label">Title *</label>
+                            <input asp-for="Title" class="form-control" id="title" required />
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Slug" class="form-label">Slug (URL)</label>
+                            <div class="input-group">
+                                <span class="input-group-text">/blog/post/</span>
+                                <input asp-for="Slug" class="form-control" id="slug" />
+                            </div>
+                            <small class="text-muted">Leave empty to auto-generate from title</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="CategoryId" class="form-label">Category</label>
+                            <select asp-for="CategoryId" class="form-select">
+                                <option value="">-- Select Category --</option>
+                                @foreach (var cat in categories)
+                                {
+                                    <option value="@cat.CategoryId">@cat.CategoryName</option>
+                                }
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Excerpt" class="form-label">Excerpt (Summary)</label>
+                            <textarea asp-for="Excerpt" class="form-control" rows="3"></textarea>
+                        </div>
+
+                        <!-- Simple Editor Toolbar -->
+                        <div class="editor-toolbar">
+                            <button type="button" onclick="insertTag('h2')"><i class="fas fa-heading"></i> Heading</button>
+                            <button type="button" onclick="insertTag('h3')"><i class="fas fa-heading"></i> Subheading</button>
+                            <button type="button" onclick="insertTag('b')"><i class="fas fa-bold"></i> Bold</button>
+                            <button type="button" onclick="insertTag('i')"><i class="fas fa-italic"></i> Italic</button>
+                            <button type="button" onclick="insertTag('u')"><i class="fas fa-underline"></i> Underline</button>
+                            <button type="button" onclick="insertTag('p')"><i class="fas fa-paragraph"></i> Paragraph</button>
+                            <button type="button" onclick="insertList('ul')"><i class="fas fa-list-ul"></i> Bullet List</button>
+                            <button type="button" onclick="insertList('ol')"><i class="fas fa-list-ol"></i> Number List</button>
+                            <button type="button" onclick="insertLink()"><i class="fas fa-link"></i> Link</button>
+                            <button type="button" onclick="insertImage()"><i class="fas fa-image"></i> Image</button>
+                            <button type="button" onclick="insertCode()"><i class="fas fa-code"></i> Code</button>
+                            <button type="button" onclick="previewContent()"><i class="fas fa-eye"></i> Preview</button>
+                            <button type="button" onclick="clearContent()" style="background: #ffc107;"><i class="fas fa-trash"></i> Clear</button>
+                        </div>
+
+                        <!-- Content Textarea -->
+                        <textarea asp-for="Content" class="form-control" id="content" rows="15" required></textarea>
+
+                        <!-- Preview Panel -->
+                        <div class="preview-panel" id="previewPanel" style="display: none;">
+                            <h6><i class="fas fa-eye me-2"></i>Preview</h6>
+                            <div class="preview-content" id="previewContent"></div>
+                            <button type="button" class="btn btn-sm btn-secondary mt-2" onclick="hidePreview()">Hide Preview</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Media Section -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0">Media</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-4">
+                            <label class="form-label">Featured Image</label>
+                            <input type="file" name="featuredImage" class="form-control" accept="image/*" />
+                            <small class="text-muted">Main image for the post</small>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label">Additional Images</label>
+                            <input type="file" name="images" class="form-control" accept="image/*" multiple />
+                            <small class="text-muted">You can select multiple images</small>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label">Video File (MP4)</label>
+                            <input type="file" name="videoFile" class="form-control" accept="video/mp4,video/webm,video/ogg" />
+                            <small class="text-muted">Upload video file</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Video URL (YouTube/Vimeo)</label>
+                            <input asp-for="VideoUrl" class="form-control" placeholder="https://www.youtube.com/watch?v=..." />
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Video Embed Code</label>
+                            <textarea asp-for="VideoEmbedCode" class="form-control" rows="3" placeholder="<iframe src='...'></iframe>"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="col-lg-4">
+                <!-- Publish Box -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0">Publish</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input asp-for="IsPublished" class="form-check-input" />
+                                <label asp-for="IsPublished" class="form-check-label">Publish immediately</label>
+                            </div>
+                        </div>
+                        <div class="mb-3" id="publishDateGroup" style="display: none;">
+                            <label asp-for="PublishedDate" class="form-label">Schedule Publication</label>
+                            <input asp-for="PublishedDate" type="datetime-local" class="form-control" />
+                        </div>
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input asp-for="IsFeatured" class="form-check-input" />
+                                <label asp-for="IsFeatured" class="form-check-label">Mark as Featured</label>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-save me-2"></i>Create Post
+                        </button>
+                    </div>
+                </div>
+
+                <!-- SEO -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0">SEO Settings</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label asp-for="MetaTitle" class="form-label">Meta Title</label>
+                            <input asp-for="MetaTitle" class="form-control" />
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="MetaDescription" class="form-label">Meta Description</label>
+                            <textarea asp-for="MetaDescription" class="form-control" rows="2"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="MetaKeywords" class="form-label">Meta Keywords</label>
+                            <input asp-for="MetaKeywords" class="form-control" />
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tags -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0">Tags</h5>
+                    </div>
+                    <div class="card-body">
+                        <input asp-for="Tags" class="form-control" placeholder="Enter tags separated by commas" />
+                        <small class="text-muted">Example: aspnet, csharp, webdev</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <script>
+        // Simple Editor Functions
+        function insertTag(tag) {
+            var textarea = document.getElementById('content');
+            var start = textarea.selectionStart;
+            var end = textarea.selectionEnd;
+            var selectedText = textarea.value.substring(start, end);
+            var before = textarea.value.substring(0, start);
+            var after = textarea.value.substring(end);
+
+            var newText;
+            if (tag === 'h2' || tag === 'h3') {
+                newText = before + '<' + tag + '>' + (selectedText || 'Heading') + '</' + tag + '>' + after;
+            } else {
+                newText = before + '<' + tag + '>' + (selectedText || 'text') + '</' + tag + '>' + after;
+            }
+
+            textarea.value = newText;
+            textarea.focus();
+        }
+
+        function insertList(type) {
+            var textarea = document.getElementById('content');
+            var start = textarea.selectionStart;
+            var end = textarea.selectionEnd;
+            var selectedText = textarea.value.substring(start, end);
+            var before = textarea.value.substring(0, start);
+            var after = textarea.value.substring(end);
+
+            var items = selectedText.split('\n').filter(item => item.trim() !== '');
+            var listHtml = '<' + type + '>\n';
+            items.forEach(item => {
+                listHtml += '  <li>' + (item || 'List item') + '</li>\n';
+            });
+            listHtml += '</' + type + '>';
+
+            textarea.value = before + listHtml + after;
+            textarea.focus();
+        }
+
+        function insertLink() {
+            var url = prompt('Enter URL:', 'https://');
+            if (url) {
+                var textarea = document.getElementById('content');
+                var start = textarea.selectionStart;
+                var end = textarea.selectionEnd;
+                var selectedText = textarea.value.substring(start, end);
+                var before = textarea.value.substring(0, start);
+                var after = textarea.value.substring(end);
+
+                var linkHtml = '<a href="' + url + '" target="_blank">' + (selectedText || 'Link Text') + '</a>';
+                textarea.value = before + linkHtml + after;
+                textarea.focus();
+            }
+        }
+
+        function insertImage() {
+            var url = prompt('Enter Image URL:', 'https://');
+            if (url) {
+                var textarea = document.getElementById('content');
+                var start = textarea.selectionStart;
+                var end = textarea.selectionEnd;
+                var before = textarea.value.substring(0, start);
+                var after = textarea.value.substring(end);
+
+                var imgHtml = '<img src="' + url + '" alt="Image" class="img-fluid" style="max-width:100%;">';
+                textarea.value = before + imgHtml + after;
+                textarea.focus();
+            }
+        }
+
+        function insertCode() {
+            var textarea = document.getElementById('content');
+            var start = textarea.selectionStart;
+            var end = textarea.selectionEnd;
+            var selectedText = textarea.value.substring(start, end);
+            var before = textarea.value.substring(0, start);
+            var after = textarea.value.substring(end);
+
+            var codeHtml = '<pre><code>' + (selectedText || '// Your code here') + '</code></pre>';
+            textarea.value = before + codeHtml + after;
+            textarea.focus();
+        }
+
+        function previewContent() {
+            var content = document.getElementById('content').value;
+            document.getElementById('previewContent').innerHTML = content;
+            document.getElementById('previewPanel').style.display = 'block';
+        }
+
+        function hidePreview() {
+            document.getElementById('previewPanel').style.display = 'none';
+        }
+
+        function clearContent() {
+            if (confirm('Clear all content?')) {
+                document.getElementById('content').value = '';
+            }
+        }
+
+        // Auto-generate slug from title
+        $('#title').on('keyup', function() {
+            if ($('#slug').val() === '') {
+                var slug = $(this).val()
+                    .toLowerCase()
+                    .replace(/[^a-z0-9\s-]/g, '')
+                    .replace(/\s+/g, '-')
+                    .replace(/-+/g, '-');
+                $('#slug').val(slug);
+            }
+        });
+
+        // Toggle publish date field
+        $('#IsPublished').on('change', function() {
+            if ($(this).is(':checked')) {
+                $('#publishDateGroup').hide();
+                $('#PublishedDate').val('');
+            } else {
+                $('#publishDateGroup').show();
+            }
+        });
+
+        // Keyboard shortcuts
+        document.getElementById('content').addEventListener('keydown', function(e) {
+            if (e.ctrlKey || e.metaKey) {
+                switch(e.key) {
+                    case 'b':
+                        e.preventDefault();
+                        insertTag('b');
+                        break;
+                    case 'i':
+                        e.preventDefault();
+                        insertTag('i');
+                        break;
+                    case 'u':
+                        e.preventDefault();
+                        insertTag('u');
+                        break;
+                    case 'k':
+                        e.preventDefault();
+                        insertLink();
+                        break;
+                }
+            }
+        });
+    </script>
+}

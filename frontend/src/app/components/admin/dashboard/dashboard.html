@@ -1,0 +1,127 @@
+<div class="container-fluid">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="text-dark fw-bold mb-0">Dashboard</h2>
+    <button (click)="loadStats()" class="btn btn-primary rounded-pill px-4"><i class="fas fa-sync-alt me-2"></i>Refresh</button>
+  </div>
+
+  <div *ngIf="isLoading" class="text-center py-5">
+     <div class="spinner-border text-primary" role="status"></div>
+     <p class="text-muted mt-2">Loading stats...</p>
+  </div>
+
+  <div *ngIf="!isLoading" class="row g-4 mb-5 animate__animated animate__fadeIn">
+    <!-- Projects Stat Card -->
+    <div class="col-md-3">
+      <div class="card border-0 shadow-sm rounded-4 p-4 text-white" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <h3 class="fw-bold mb-1">{{ stats.projectsCount }}</h3>
+            <p class="mb-0 small opacity-75">Active Projects</p>
+          </div>
+          <i class="fas fa-project-diagram fa-2x opacity-50"></i>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Skills Stat Card -->
+    <div class="col-md-3">
+      <div class="card border-0 shadow-sm rounded-4 p-4 text-white" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <h3 class="fw-bold mb-1">{{ stats.skillsCount }}</h3>
+            <p class="mb-0 small opacity-75">Skills Listed</p>
+          </div>
+          <i class="fas fa-chart-bar fa-2x opacity-50"></i>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Messages Stat Card -->
+    <div class="col-md-3">
+      <div class="card border-0 shadow-sm rounded-4 p-4 text-white" style="background: linear-gradient(135deg, #ff9966 0%, #ff5e62 100%);">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <h3 class="fw-bold mb-1">{{ stats.messagesCount }}</h3>
+            <p class="mb-0 small opacity-75">Contact Messages</p>
+          </div>
+          <i class="fas fa-envelope fa-2x opacity-50"></i>
+        </div>
+      </div>
+    </div>
+
+    <!-- Resume Downloads Stat Card -->
+    <div class="col-md-3">
+      <div class="card border-0 shadow-sm rounded-4 p-4 text-white" style="background: linear-gradient(135deg, #8e2de2 0%, #4a00e0 100%);">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <h3 class="fw-bold mb-1">{{ stats.resumeViewsCount }}</h3>
+            <p class="mb-0 small opacity-75">CV Downloads</p>
+          </div>
+          <i class="fas fa-file-pdf fa-2x opacity-50"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="!isLoading" class="row g-4">
+    <!-- Recent Visitor Tracking -->
+    <div class="col-lg-6">
+      <div class="card border-0 shadow-sm rounded-4 p-4">
+        <h5 class="text-dark fw-bold mb-3"><i class="fas fa-users text-primary me-2"></i>Recent Visitors</h5>
+        <div class="table-responsive">
+          <table class="table table-hover align-middle">
+            <thead>
+              <tr class="small text-muted text-uppercase">
+                <th>IP Address</th>
+                <th>Location</th>
+                <th>Platform</th>
+                <th>Last Visit</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let log of stats.recentVisitorLogs" class="small">
+                <td class="font-monospace">{{ log.ipAddress }}</td>
+                <td>{{ log.city || 'Local' }}, {{ log.country || 'Host' }}</td>
+                <td style="max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ log.userAgent }}</td>
+                <td>{{ log.lastVisit | date:'short' }}</td>
+              </tr>
+              <tr *ngIf="!stats.recentVisitorLogs || stats.recentVisitorLogs.length === 0">
+                <td colspan="4" class="text-center py-3 text-muted">No visitors logged yet.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent Resume Downloads -->
+    <div class="col-lg-6">
+      <div class="card border-0 shadow-sm rounded-4 p-4">
+        <h5 class="text-dark fw-bold mb-3"><i class="fas fa-file-download text-success me-2"></i>Recent Downloads</h5>
+        <div class="table-responsive">
+          <table class="table table-hover align-middle">
+            <thead>
+              <tr class="small text-muted text-uppercase">
+                <th>Name</th>
+                <th>Email</th>
+                <th>Company</th>
+                <th>Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let log of stats.recentResumeDownloads" class="small">
+                <td><strong>{{ log.visitorName }}</strong></td>
+                <td>{{ log.visitorEmail }}</td>
+                <td>{{ log.companyName || '-' }} ({{ log.designation || '-' }})</td>
+                <td>{{ log.viewDate | date:'short' }}</td>
+              </tr>
+              <tr *ngIf="!stats.recentResumeDownloads || stats.recentResumeDownloads.length === 0">
+                <td colspan="4" class="text-center py-3 text-muted">No resume views logged yet.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

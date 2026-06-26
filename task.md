@@ -1,0 +1,23 @@
+- [x] Core Services & Authentication
+  - [x] Implement `auth.ts` service
+  - [x] Create `auth-interceptor.ts`
+  - [x] Configure `app-module.ts`
+  - [x] Update `auth-guard.ts`
+  - [x] Add CRUD mutation methods to `portfolio.ts`
+- [x] Public Pages
+  - [x] Implement `blog.ts` service & components (list + details)
+  - [x] Implement `gallery.ts` service & component
+  - [x] Implement `resume.ts` service & resume-download component
+  - [x] Implement `chat.ts` service & chat-widget component
+  - [x] Implement `visitor.ts` tracking
+- [x] Admin Control Panels
+  - [x] Implement login component
+  - [x] Implement dashboard component
+  - [x] Implement profile component
+  - [x] Implement skills component
+  - [x] Implement projects component
+  - [x] Implement experience & education components
+  - [x] Implement messages component
+  - [x] Implement blog management & blog form components
+  - [x] Implement gallery management component
+  - [x] Implement logs component

@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36310.24 d17.14
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Portfolio Management System", "Portfolio Management System.csproj", "{2DD9CC21-116F-4026-9975-1D6B5FD3E5FD}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{2DD9CC21-116F-4026-9975-1D6B5FD3E5FD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2DD9CC21-116F-4026-9975-1D6B5FD3E5FD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2DD9CC21-116F-4026-9975-1D6B5FD3E5FD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2DD9CC21-116F-4026-9975-1D6B5FD3E5FD}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {3F774D51-514F-4725-8A70-815EF7E6FA00}
+	EndGlobalSection
+EndGlobal

@@ -1,0 +1,170 @@
+﻿@model BlogPostViewModel
+@{
+    ViewData["Title"] = Model.Post.Title;
+}
+
+<!-- Post Header -->
+<section class="py-5 bg-primary text-white">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 mx-auto text-center">
+                <h1 class="display-4 fw-bold mb-4">@Model.Post.Title</h1>
+                <div class="d-flex justify-content-center text-white-50 flex-wrap">
+                    <span class="me-3 mb-2"><i class="far fa-calendar me-1"></i>@Model.Post.CreatedDate.ToString("MMMM dd, yyyy")</span>
+                    <span class="me-3 mb-2"><i class="far fa-clock me-1"></i>@Model.Post.ReadingTime</span>
+                    <span class="me-3 mb-2"><i class="far fa-eye me-1"></i><span id="viewCount">@Model.Post.ViewCount</span> views</span>
+                    <span class="mb-2"><i class="far fa-heart me-1"></i><span id="likeCount">@Model.Post.LikeCount</span> likes</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Post Content -->
+<section class="py-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 mx-auto">
+                <!-- Featured Image -->
+                @if (!string.IsNullOrEmpty(Model.Post.FeaturedImage))
+                {
+                    <div class="text-center mb-5">
+                        <img src="@Model.Post.FeaturedImage" class="img-fluid rounded-4 shadow-lg" alt="@Model.Post.Title" style="max-height: 500px; width: auto;">
+                    </div>
+                }
+
+                <!-- Content -->
+                <div class="blog-content">
+                    @Html.Raw(Model.Post.Content)
+                </div>
+
+                <!-- Tags -->
+                @if (Model.Post.TagList.Any())
+                {
+                    <div class="my-5">
+                        <h5 class="mb-3">Tags</h5>
+                        <div>
+                            @foreach (var tag in Model.Post.TagList)
+                            {
+                                <span class="badge bg-light text-dark p-2 me-2 mb-2 border">#@tag</span>
+                            }
+                        </div>
+                    </div>
+                }
+
+                <!-- Hidden Post ID -->
+                <input type="hidden" id="postId" value="@Model.Post.PostId" />
+
+                <!-- Anti-forgery Token -->
+                @Html.AntiForgeryToken()
+
+                <!-- LIKE BUTTON - RED COLOR -->
+                <div class="text-center my-5">
+                    <button id="likeButton" class="btn btn-danger btn-lg">
+                        <i class="fas fa-heart me-2"></i>
+                        <span id="likeButtonText">Like</span>
+                        (<span id="likeCount">@Model.Post.LikeCount</span>)
+                    </button>
+                </div>
+
+                <!-- COMMENT FORM -->
+                <div class="mt-5">
+                    <h3 class="mb-4">Leave a Comment</h3>
+
+                    <div class="card border-0 shadow-sm mb-4">
+                        <div class="card-body p-4">
+                            <div class="mb-3">
+                                <input type="text" class="form-control" id="commentName" placeholder="Your Name *">
+                            </div>
+                            <div class="mb-3">
+                                <input type="email" class="form-control" id="commentEmail" placeholder="Your Email *">
+                            </div>
+                            <div class="mb-3">
+                                <textarea class="form-control" id="commentMessage" rows="4" placeholder="Your Comment *"></textarea>
+                            </div>
+                            <button id="commentButton" class="btn btn-primary">Post Comment</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Back to Blog -->
+                <div class="text-center mt-5">
+                    <a href="/Blog" class="btn btn-outline-primary btn-lg px-5">
+                        <i class="fas fa-arrow-left me-2"></i>Back to Blog
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            console.log("✅ Post Page Loaded");
+
+            var postId = $('#postId').val();
+            var token = $('input[name="__RequestVerificationToken"]').val();
+
+            // LIKE BUTTON - RED COLOR
+            $('#likeButton').on('click', function() {
+                var button = $(this);
+
+                $.ajax({
+                    url: '/Blog/ToggleLike',
+                    type: 'POST',
+                    data: { postId: postId },
+                    headers: { 'RequestVerificationToken': token },
+                    success: function(response) {
+                        if (response.success) {
+                            $('#likeCount').text(response.likeCount);
+
+                            if (response.action === 'liked') {
+                                button.addClass('btn-danger').removeClass('btn-outline-danger');
+                                $('#likeButtonText').text('Liked');
+                            } else {
+                                button.removeClass('btn-danger').addClass('btn-outline-danger');
+                                $('#likeButtonText').text('Like');
+                            }
+
+                            alert('✅ Like updated!');
+                        }
+                    }
+                });
+            });
+
+            // COMMENT BUTTON
+            $('#commentButton').on('click', function() {
+                var name = $('#commentName').val().trim();
+                var email = $('#commentEmail').val().trim();
+                var comment = $('#commentMessage').val().trim();
+
+                if (!name || !email || !comment) {
+                    alert('Please fill all fields');
+                    return;
+                }
+
+                $.ajax({
+                    url: '/Blog/AddComment',
+                    type: 'POST',
+                    data: {
+                        postId: postId,
+                        Name: name,
+                        Email: email,
+                        Comment: comment
+                    },
+                    headers: { 'RequestVerificationToken': token },
+                    success: function(response) {
+                        if (response.success) {
+                            alert('✅ Comment submitted!');
+                            $('#commentName').val('');
+                            $('#commentEmail').val('');
+                            $('#commentMessage').val('');
+                        }
+                    }
+                });
+            });
+        });
+    </script>
+}

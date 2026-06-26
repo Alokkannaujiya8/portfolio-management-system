@@ -1,0 +1,220 @@
+<div class="container-fluid py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2 class="text-dark fw-bold mb-0">
+        <i class="fas fa-blog text-primary me-2"></i>Blog Administration
+      </h2>
+      <p class="text-muted mb-0 small">Publish articles, organize categories, and moderate visitor comments.</p>
+    </div>
+  </div>
+
+  <!-- Messages notifications -->
+  <div *ngIf="successMessage" class="alert alert-success rounded-3 small py-2 mb-4">{{ successMessage }}</div>
+  <div *ngIf="errorMessage" class="alert alert-danger rounded-3 small py-2 mb-4">{{ errorMessage }}</div>
+
+  <!-- Tabs Navigation -->
+  <ul class="nav nav-tabs border-bottom mb-4">
+    <li class="nav-item">
+      <button class="nav-link px-4 py-3 fw-bold" [class.active]="activeTab === 'posts'" (click)="switchTab('posts')">
+        <i class="fas fa-file-alt me-2"></i>Blog Posts
+      </button>
+    </li>
+    <li class="nav-item">
+      <button class="nav-link px-4 py-3 fw-bold" [class.active]="activeTab === 'categories'" (click)="switchTab('categories')">
+        <i class="fas fa-tags me-2"></i>Categories
+      </button>
+    </li>
+    <li class="nav-item">
+      <button class="nav-link px-4 py-3 fw-bold" [class.active]="activeTab === 'comments'" (click)="switchTab('comments')">
+        <i class="fas fa-comments me-2"></i>Comments Moderation
+      </button>
+    </li>
+  </ul>
+
+  <!-- Tab Content Area -->
+  <div class="card border-0 shadow-sm rounded-4 p-4">
+    
+    <!-- Loader -->
+    <div *ngIf="isLoading" class="text-center py-5">
+      <div class="spinner-border text-primary" role="status"></div>
+      <p class="text-muted mt-2 small">Loading content...</p>
+    </div>
+
+    <div *ngIf="!isLoading">
+
+      <!-- 1. Posts Tab -->
+      <div *ngIf="activeTab === 'posts'">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <h5 class="text-dark fw-bold mb-0">Published Articles</h5>
+          <button (click)="onAddPost()" class="btn btn-primary rounded-pill px-4">
+            <i class="fas fa-plus me-1"></i> Add New Post
+          </button>
+        </div>
+
+        <div class="table-responsive">
+          <table class="table table-hover align-middle">
+            <thead>
+              <tr class="small text-muted text-uppercase">
+                <th>Post Details</th>
+                <th>Category</th>
+                <th>Likes / Views</th>
+                <th>Status</th>
+                <th>Date</th>
+                <th class="text-end">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let post of posts">
+                <td>
+                  <div class="d-flex align-items-center">
+                    <img *ngIf="post.imagePath" [src]="'http://localhost:5154' + post.imagePath" class="rounded me-3" style="width: 50px; height: 50px; object-fit: cover;" alt="Cover">
+                    <div>
+                      <h6 class="mb-0 fw-bold">{{ post.title }}</h6>
+                      <span class="text-muted small" style="font-size: 11px;">Slug: {{ post.slug }}</span>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <span class="badge bg-light text-dark border">{{ post.categoryName || 'Uncategorized' }}</span>
+                </td>
+                <td>
+                  <div class="small">
+                    <span class="me-3"><i class="fas fa-thumbs-up text-primary me-1"></i>{{ post.likesCount || 0 }}</span>
+                    <span><i class="fas fa-eye text-success me-1"></i>{{ post.viewsCount || 0 }}</span>
+                  </div>
+                </td>
+                <td>
+                  <span class="badge" [ngClass]="post.isPublished ? 'bg-success-subtle text-success' : 'bg-warning-subtle text-warning'">
+                    {{ post.isPublished ? 'Published' : 'Draft' }}
+                  </span>
+                </td>
+                <td class="small text-muted">
+                  {{ post.createdDate | date:'MMM dd, yyyy' }}
+                </td>
+                <td class="text-end">
+                  <button (click)="onEditPost(post.postId)" class="btn btn-sm btn-outline-primary rounded-circle me-1" title="Edit">
+                    <i class="fas fa-edit"></i>
+                  </button>
+                  <button (click)="onDeletePost(post.postId)" class="btn btn-sm btn-outline-danger rounded-circle" title="Delete">
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </td>
+              </tr>
+              <tr *ngIf="posts.length === 0">
+                <td colspan="6" class="text-center text-muted py-4">No blog posts found. Create your first post!</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 2. Categories Tab -->
+      <div *ngIf="activeTab === 'categories'">
+        <div class="row g-4">
+          <!-- Add Category Form -->
+          <div class="col-md-4">
+            <div class="bg-light p-4 rounded-3 border-0">
+              <h6 class="text-dark fw-bold mb-3">Add Category</h6>
+              <div class="mb-3">
+                <label for="catName" class="form-label small fw-bold text-muted">Category Name</label>
+                <input type="text" id="catName" [(ngModel)]="newCategoryName" class="form-control rounded-3" placeholder="e.g. Technology">
+              </div>
+              <button (click)="onAddCategory()" [disabled]="!newCategoryName.trim() || isSavingCategory" class="btn btn-primary rounded-pill px-4 w-100">
+                <span *ngIf="isSavingCategory" class="spinner-border spinner-border-sm me-2"></span>
+                Save Category
+              </button>
+            </div>
+          </div>
+
+          <!-- Categories List -->
+          <div class="col-md-8">
+            <h5 class="text-dark fw-bold mb-4">Existing Categories</h5>
+            <div class="table-responsive">
+              <table class="table table-hover align-middle">
+                <thead>
+                  <tr class="small text-muted text-uppercase">
+                    <th>ID</th>
+                    <th>Category Name</th>
+                    <th>Slug</th>
+                    <th class="text-end">Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let cat of categories">
+                    <td>{{ cat.categoryId }}</td>
+                    <td><strong>{{ cat.categoryName }}</strong></td>
+                    <td class="text-muted small">{{ cat.slug }}</td>
+                    <td class="text-end">
+                      <button (click)="onDeleteCategory(cat.categoryId)" class="btn btn-sm btn-outline-danger rounded-circle" title="Delete">
+                        <i class="fas fa-trash"></i>
+                      </button>
+                    </td>
+                  </tr>
+                  <tr *ngIf="categories.length === 0">
+                    <td colspan="4" class="text-center text-muted py-3">No categories available.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. Comments Tab -->
+      <div *ngIf="activeTab === 'comments'">
+        <h5 class="text-dark fw-bold mb-4">Manage Visitor Comments</h5>
+
+        <div class="table-responsive">
+          <table class="table table-hover align-middle">
+            <thead>
+              <tr class="small text-muted text-uppercase">
+                <th>Author</th>
+                <th>Post</th>
+                <th>Comment</th>
+                <th>Date</th>
+                <th>Status</th>
+                <th class="text-end">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let comment of comments">
+                <td>
+                  <div class="d-flex flex-column">
+                    <span class="text-dark fw-bold">{{ comment.name }}</span>
+                    <span class="text-muted small" style="font-size: 11px;">{{ comment.email }}</span>
+                  </div>
+                </td>
+                <td class="small">
+                  {{ comment.postTitle }}
+                </td>
+                <td class="text-muted small" style="max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" [title]="comment.commentText">
+                  {{ comment.commentText }}
+                </td>
+                <td class="small text-muted">
+                  {{ comment.createdDate | date:'MMM dd, yyyy HH:mm' }}
+                </td>
+                <td>
+                  <span class="badge" [ngClass]="comment.isApproved ? 'bg-success-subtle text-success' : 'bg-warning-subtle text-warning'">
+                    {{ comment.isApproved ? 'Approved' : 'Pending' }}
+                  </span>
+                </td>
+                <td class="text-end">
+                  <button *ngIf="!comment.isApproved" (click)="onApproveComment(comment.commentId)" class="btn btn-sm btn-success rounded-circle me-1" title="Approve">
+                    <i class="fas fa-check"></i>
+                  </button>
+                  <button (click)="onDeleteComment(comment.commentId)" class="btn btn-sm btn-outline-danger rounded-circle" title="Delete">
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </td>
+              </tr>
+              <tr *ngIf="comments.length === 0">
+                <td colspan="6" class="text-center text-muted py-4">No comments found to moderate.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>

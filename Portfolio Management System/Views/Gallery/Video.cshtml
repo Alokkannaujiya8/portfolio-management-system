@@ -1,0 +1,72 @@
+﻿@model GalleryModel
+@{
+    ViewData["Title"] = Model.Title;
+}
+
+<!-- Video Header -->
+<section class="py-4 bg-primary text-white">
+    <div class="container">
+        <a href="/Gallery" class="btn btn-outline-light mb-3">
+            <i class="fas fa-arrow-left me-2"></i>Back to Gallery
+        </a>
+        <h1 class="display-5 fw-bold">@Model.Title</h1>
+        <div class="d-flex text-white-50">
+            <span class="me-3"><i class="far fa-eye me-1"></i>@Model.ViewCount views</span>
+            <span><i class="far fa-calendar me-1"></i>@Model.CreatedDate.ToString("MMMM dd, yyyy")</span>
+        </div>
+    </div>
+</section>
+
+<!-- Video Player -->
+<section class="py-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 mx-auto">
+                <div class="card border-0 shadow-lg overflow-hidden rounded-4">
+                    <div class="ratio ratio-16x9">
+                        @if (!string.IsNullOrEmpty(Model.VideoEmbedCode))
+                        {
+                            @Html.Raw(Model.VideoEmbedCode)
+                        }
+                        else if (!string.IsNullOrEmpty(Model.MediaPath))
+                        {
+                            if (Model.MediaPath.Contains("youtube") || Model.MediaPath.Contains("youtu.be"))
+                            {
+                                var videoId = GetYouTubeId(Model.MediaPath);
+                                <iframe src="https://www.youtube.com/embed/@videoId" allowfullscreen></iframe>
+                            }
+                            else if (Model.MediaPath.Contains("vimeo"))
+                            {
+                                var vimeoId = Model.MediaPath.Split('/').Last();
+                                <iframe src="https://player.vimeo.com/video/@vimeoId" allowfullscreen></iframe>
+                            }
+                            else if (Model.MediaPath.EndsWith(".mp4"))
+                            {
+                                <video src="@Model.MediaPath" controls class="w-100"></video>
+                            }
+                        }
+                    </div>
+                </div>
+
+                <div class="mt-4">
+                    <h3>@Model.Title</h3>
+                    <p class="text-muted">@Model.Description</p>
+
+                    @if (!string.IsNullOrEmpty(Model.Category))
+                    {
+                        <span class="badge bg-primary">@Model.Category</span>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@functions {
+    public string GetYouTubeId(string url)
+    {
+        var regExp = @"^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*";
+        var match = System.Text.RegularExpressions.Regex.Match(url, regExp);
+        return match.Success && match.Groups[2].Length == 11 ? match.Groups[2].Value : "";
+    }
+}

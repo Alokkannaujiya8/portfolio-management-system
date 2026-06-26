@@ -1,0 +1,211 @@
+﻿@model List<GalleryModel>
+@{
+    ViewData["Title"] = "Gallery";
+    var categories = ViewBag.Categories as List<string> ?? new List<string>();
+    var currentType = ViewBag.CurrentType as string;
+}
+
+<!-- Page Header -->
+<section class="py-5 bg-primary text-white">
+    <div class="container text-center">
+        <h1 class="display-4 fw-bold">My Gallery</h1>
+        <p class="lead">Collection of my work, projects, and moments</p>
+    </div>
+</section>
+
+<!-- Gallery Content -->
+<section class="py-5">
+    <div class="container">
+        <!-- Filter Buttons -->
+        <div class="text-center mb-5">
+            <a href="/Gallery" class="btn @(string.IsNullOrEmpty(currentType) ? "btn-primary" : "btn-outline-primary") me-2 mb-2">All</a>
+            <a href="/Gallery?type=image" class="btn @(currentType == "image" ? "btn-primary" : "btn-outline-primary") me-2 mb-2">Images</a>
+            <a href="/Gallery?type=video" class="btn @(currentType == "video" ? "btn-primary" : "btn-outline-primary") me-2 mb-2">Videos</a>
+            <a href="/Gallery?type=document" class="btn @(currentType == "document" ? "btn-primary" : "btn-outline-primary") mb-2">Documents</a>
+        </div>
+
+        <!-- Gallery Grid -->
+        <div class="row g-4">
+            @if (Model.Any())
+            {
+                foreach (var item in Model)
+                {
+                    <div class="col-lg-4 col-md-6">
+                        <div class="card border-0 shadow-sm h-100 gallery-card">
+                            @if (item.MediaType == "image")
+                            {
+                                <img src="@item.MediaPath" class="card-img-top" alt="@item.Title" style="height: 250px; object-fit: cover; cursor: pointer;" onclick="openImage('@item.MediaPath')">
+                            }
+                            else if (item.MediaType == "video")
+                            {
+                                <div class="position-relative" style="height: 250px; background: #000; cursor: pointer;" onclick="openVideo('@item.MediaPath', '@item.VideoEmbedCode')">
+                                    @if (!string.IsNullOrEmpty(item.ThumbnailPath))
+                                    {
+                                        <img src="@item.ThumbnailPath" class="w-100 h-100" style="object-fit: cover;" alt="@item.Title">
+                                    }
+                                    else if (!string.IsNullOrEmpty(item.MediaPath) && item.MediaPath.EndsWith(".mp4"))
+                                    {
+                                        <video src="@item.MediaPath" class="w-100 h-100" style="object-fit: cover;"></video>
+                                    }
+                                    else
+                                    {
+                                        <div class="bg-light w-100 h-100 d-flex align-items-center justify-content-center">
+                                            <i class="fas fa-video fa-4x text-primary"></i>
+                                        </div>
+                                    }
+                                    <div class="position-absolute top-50 start-50 translate-middle">
+                                        <i class="fas fa-play-circle fa-4x text-white opacity-75"></i>
+                                    </div>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="bg-light d-flex align-items-center justify-content-center" style="height: 250px; cursor: pointer;" onclick="downloadFile(@item.GalleryId)">
+                                    <i class="fas fa-file-pdf fa-5x text-danger"></i>
+                                </div>
+                            }
+
+                            <div class="card-body">
+                                <h5 class="card-title">@item.Title</h5>
+                                <p class="card-text text-muted small">@item.Description</p>
+
+                                <div class="d-flex justify-content-between align-items-center mt-3">
+                                    <div>
+                                        <span class="badge bg-primary me-2">@item.MediaType</span>
+                                        @if (!string.IsNullOrEmpty(item.Category))
+                                        {
+                                            <span class="badge bg-secondary">@item.Category</span>
+                                        }
+                                    </div>
+                                    <div class="text-muted small">
+                                        <span class="me-2"><i class="far fa-eye"></i> @item.ViewCount</span>
+                                        @if (item.MediaType == "document")
+                                        {
+                                            <span><i class="fas fa-download"></i> @item.DownloadCount</span>
+                                        }
+                                    </div>
+                                </div>
+
+                                @if (item.MediaType == "video" && !string.IsNullOrEmpty(item.MediaPath))
+                                {
+                                    <div class="mt-3">
+                                        <a href="/Gallery/Video/@item.GalleryId" class="btn btn-sm btn-outline-primary w-100">
+                                            <i class="fas fa-play me-2"></i>Watch Video
+                                        </a>
+                                    </div>
+                                }
+
+                                @if (item.MediaType == "document")
+                                {
+                                    <div class="mt-3">
+                                        <a href="/Gallery/Download/@item.GalleryId" class="btn btn-sm btn-outline-primary w-100">
+                                            <i class="fas fa-download me-2"></i>Download
+                                        </a>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="col-12 text-center py-5">
+                    <i class="fas fa-images fa-4x text-muted mb-3"></i>
+                    <h3>No gallery items yet</h3>
+                    <p class="text-muted">Check back later for new content!</p>
+                </div>
+            }
+        </div>
+    </div>
+</section>
+
+<!-- Image Modal -->
+<div class="modal fade" id="imageModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Image Viewer</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center p-0" id="imageModalBody">
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Video Modal -->
+<div class="modal fade" id="videoModal" tabindex="-1">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Video Player</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-0" id="videoModalBody">
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function openImage(imagePath) {
+            $('#imageModalBody').html(`<img src="${imagePath}" class="img-fluid" alt="Gallery image">`);
+            $('#imageModal').modal('show');
+        }
+
+        function openVideo(videoPath, embedCode) {
+            var videoHtml = '';
+
+            if (embedCode) {
+                videoHtml = embedCode;
+            } else if (videoPath) {
+                if (videoPath.includes('youtube.com') || videoPath.includes('youtu.be')) {
+                    var videoId = getYouTubeId(videoPath);
+                    videoHtml = `<iframe width="100%" height="500" src="https://www.youtube.com/embed/${videoId}" frameborder="0" allowfullscreen></iframe>`;
+                } else if (videoPath.includes('vimeo.com')) {
+                    var vimeoId = videoPath.split('/').pop();
+                    videoHtml = `<iframe src="https://player.vimeo.com/video/${vimeoId}" width="100%" height="500" frameborder="0" allowfullscreen></iframe>`;
+                } else if (videoPath.endsWith('.mp4')) {
+                    videoHtml = `<video src="${videoPath}" controls class="w-100" style="max-height: 500px;"></video>`;
+                }
+            }
+
+            $('#videoModalBody').html(videoHtml);
+            $('#videoModal').modal('show');
+        }
+
+        function downloadFile(id) {
+            window.location.href = '/Gallery/Download/' + id;
+        }
+
+        function getYouTubeId(url) {
+            var regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+            var match = url.match(regExp);
+            return (match && match[2].length === 11) ? match[2] : null;
+        }
+    </script>
+}
+
+<style>
+    .gallery-card {
+        transition: transform 0.3s, box-shadow 0.3s;
+        border-radius: 15px;
+        overflow: hidden;
+    }
+
+        .gallery-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2) !important;
+        }
+
+        .gallery-card .position-relative {
+            overflow: hidden;
+        }
+
+            .gallery-card .position-relative:hover i {
+                transform: scale(1.1);
+                transition: transform 0.3s;
+            }
+</style>

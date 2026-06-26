@@ -1,0 +1,115 @@
+﻿@model List<BlogCommentModel>
+@{
+    var comments = Model ?? new List<BlogCommentModel>();
+}
+
+@if (!comments.Any())
+{
+    <div class="text-center py-5">
+        <i class="fas fa-comments fa-4x text-muted mb-3"></i>
+        <h5 class="text-muted">No comments found</h5>
+    </div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Author</th>
+                    <th>Comment</th>
+                    <th>Post</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var comment in comments)
+                {
+                    <tr id="comment-@comment.CommentId">
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <div class="avatar-circle bg-primary text-white me-2">
+                                    @(comment.Name?.Substring(0, 1).ToUpper() ?? "?")
+                                </div>
+                                <div>
+                                    <strong>@comment.Name</strong><br>
+                                    <small class="text-muted">@comment.Email</small>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="comment-preview">
+                                @(comment.Comment?.Length > 50 ? comment.Comment.Substring(0, 50) + "..." : comment.Comment)
+                            </div>
+                        </td>
+                        <td>
+                            <span class="badge bg-info">@(comment.PostTitle ?? $"Post #{comment.PostId}")</span>
+                        </td>
+                        <td>
+                            <small>@comment.CreatedDate.ToString("MMM dd, yyyy")</small><br>
+                            <small class="text-muted">@comment.CreatedDate.ToString("HH:mm")</small>
+                        </td>
+                        <td>
+                            @if (comment.IsApproved)
+                            {
+                                <span class="badge bg-success">Approved</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-warning">Pending</span>
+                            }
+                        </td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <button class="btn btn-info" onclick="viewComment(@comment.CommentId, '@comment.Name', '@comment.Email', '@comment.Website', '@(comment.PostTitle ?? $"Post #{comment.PostId}")', '@comment.CreatedDate.ToString("yyyy-MM-dd HH:mm")', '@comment.IPAddress', @comment.IsApproved.ToString().ToLower(), '@comment.Comment.Replace("'", "\\'")')">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+
+                                @if (!comment.IsApproved)
+                                {
+                                    <button class="btn btn-success" onclick="approveComment(@comment.CommentId)">
+                                        <i class="fas fa-check"></i>
+                                    </button>
+                                }
+
+                                <button class="btn btn-primary" onclick="showReplyModal(@comment.CommentId, @comment.PostId, '@comment.Name')">
+                                    <i class="fas fa-reply"></i>
+                                </button>
+
+                                <button class="btn btn-danger" onclick="deleteComment(@comment.CommentId)">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+<style>
+    .avatar-circle {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 1.1rem;
+    }
+
+    .comment-preview {
+        max-width: 250px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .btn-group .btn {
+        margin: 0 2px;
+    }
+</style>

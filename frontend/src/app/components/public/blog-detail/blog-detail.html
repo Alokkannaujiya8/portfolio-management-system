@@ -1,0 +1,169 @@
+<div *ngIf="isLoading" class="text-center py-5 my-5">
+  <div class="spinner-border text-primary" role="status"></div>
+  <p class="text-muted mt-2">Loading blog post...</p>
+</div>
+
+<div *ngIf="!isLoading && post" class="container my-5 pt-4">
+  <div class="row">
+    <!-- Main Content -->
+    <div class="col-lg-8">
+      <article>
+        <!-- Header -->
+        <header class="mb-4">
+          <span class="badge bg-primary-subtle text-primary mb-2 rounded-pill px-3 py-1 text-uppercase font-monospace small">
+            {{ post.categoryName || 'General' }}
+          </span>
+          <h1 class="fw-bold text-dark mb-3">{{ post.title }}</h1>
+          
+          <div class="d-flex align-items-center gap-3 text-muted small border-bottom pb-3 mb-4">
+            <div><i class="far fa-calendar-alt me-1"></i> {{ post.createdDate | date:'longDate' }}</div>
+            <div><i class="far fa-eye me-1"></i> {{ post.viewCount || 0 }} views</div>
+            <div>
+              <button (click)="onLike()" class="btn btn-sm btn-link text-decoration-none text-muted p-0 d-flex align-items-center gap-1" [disabled]="hasLiked">
+                <i class="fa-heart" [class.fas]="hasLiked" [class.far]="!hasLiked" [class.text-danger]="hasLiked"></i> 
+                <span>{{ post.likeCount || 0 }} likes</span>
+              </button>
+            </div>
+          </div>
+        </header>
+
+        <!-- Featured Image -->
+        <figure class="mb-4 rounded-4 overflow-hidden shadow-sm" style="max-height: 450px;">
+          <img [src]="assetUrl(post.featuredImage)" [alt]="post.title" class="w-100 h-100" style="object-fit: cover;">
+        </figure>
+
+        <!-- Post Content -->
+        <section class="blog-content text-dark mb-5 lh-lg" [innerHTML]="post.content" style="font-size: 1.1rem;"></section>
+      </article>
+
+      <!-- Comments Section -->
+      <section class="comments-section mb-5 border-top pt-4">
+        <h4 class="fw-bold text-dark mb-4">Comments ({{ comments.length }})</h4>
+
+        <!-- Comments Feed -->
+        <div class="d-flex flex-column gap-4 mb-4">
+          <ng-container *ngFor="let comment of comments">
+            <!-- Parent Comments only -->
+            <div *ngIf="!comment.parentCommentId" class="card border-0 bg-light rounded-4 p-4">
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <h6 class="fw-bold text-dark mb-0">{{ comment.name }}</h6>
+                <small class="text-muted">{{ comment.createdDate | date:'short' }}</small>
+              </div>
+              <p class="text-muted mb-2">{{ comment.comment }}</p>
+              
+              <div class="d-flex gap-2">
+                <button (click)="onReply(comment.commentId)" class="btn btn-sm btn-outline-primary rounded-pill px-3 py-1">
+                  Reply <i class="fas fa-reply ms-1"></i>
+                </button>
+              </div>
+
+              <!-- Inline Reply Form -->
+              <div *ngIf="activeReplyId === comment.commentId" class="card mt-3 border-0 bg-white shadow-sm p-3 rounded-4">
+                <h6 class="fw-bold text-dark mb-3">Reply to {{ comment.name }}</h6>
+                <form (ngSubmit)="onSubmitReply(comment.commentId)">
+                  <div class="row g-2 mb-3">
+                    <div class="col-md-6">
+                      <input type="text" class="form-control form-control-sm rounded-pill" placeholder="Name *" required [(ngModel)]="replyModel.name" name="repName">
+                    </div>
+                    <div class="col-md-6">
+                      <input type="email" class="form-control form-control-sm rounded-pill" placeholder="Email *" required [(ngModel)]="replyModel.email" name="repEmail">
+                    </div>
+                  </div>
+                  <div class="mb-3">
+                    <textarea class="form-control rounded-4" rows="2" placeholder="Write your reply here..." required [(ngModel)]="replyModel.comment" name="repComment"></textarea>
+                  </div>
+                  <div class="d-flex gap-2 justify-content-end">
+                    <button type="button" (click)="cancelReply()" class="btn btn-sm btn-outline-secondary rounded-pill px-3">Cancel</button>
+                    <button type="submit" class="btn btn-sm btn-primary rounded-pill px-4">Submit Reply</button>
+                  </div>
+                </form>
+              </div>
+
+              <!-- Nested Replies -->
+              <div class="replies-container ms-4 mt-3 border-start ps-3" *ngIf="comment.replies && comment.replies.length > 0">
+                <div *ngFor="let rep of comment.replies" class="card border-0 bg-white rounded-4 p-3 mb-2 shadow-sm">
+                  <div class="d-flex justify-content-between align-items-center mb-1">
+                    <h6 class="fw-bold text-dark mb-0">{{ rep.name }}</h6>
+                    <small class="text-muted" style="font-size: 0.8rem;">{{ rep.createdDate | date:'short' }}</small>
+                  </div>
+                  <p class="text-muted mb-0 small">{{ rep.comment }}</p>
+                </div>
+              </div>
+
+            </div>
+          </ng-container>
+        </div>
+
+        <!-- Add Comment Form -->
+        <div class="card border-0 shadow-sm rounded-4 p-4 bg-white mt-5">
+          <h5 class="fw-bold text-dark mb-4">Leave a Comment</h5>
+          
+          <div *ngIf="commentSuccessMessage" class="alert alert-success rounded-3">{{ commentSuccessMessage }}</div>
+          <div *ngIf="commentErrorMessage" class="alert alert-danger rounded-3">{{ commentErrorMessage }}</div>
+
+          <form (ngSubmit)="onSubmitComment()" #commentForm="ngForm">
+            <div class="row g-3 mb-3">
+              <div class="col-md-6">
+                <label for="name" class="form-label small fw-bold text-muted">Name *</label>
+                <input type="text" id="name" name="name" class="form-control rounded-3" placeholder="Your name" required [(ngModel)]="commentModel.name">
+              </div>
+              <div class="col-md-6">
+                <label for="email" class="form-label small fw-bold text-muted">Email *</label>
+                <input type="email" id="email" name="email" class="form-control rounded-3" placeholder="Your email address" required [(ngModel)]="commentModel.email">
+              </div>
+            </div>
+            
+            <div class="mb-3">
+              <label for="website" class="form-label small fw-bold text-muted">Website (Optional)</label>
+              <input type="text" id="website" name="website" class="form-control rounded-3" placeholder="http://yourwebsite.com" [(ngModel)]="commentModel.website">
+            </div>
+
+            <div class="mb-4">
+              <label for="comment" class="form-label small fw-bold text-muted">Comment *</label>
+              <textarea id="comment" name="comment" class="form-control rounded-3" rows="4" placeholder="Type your comment here..." required [(ngModel)]="commentModel.comment"></textarea>
+            </div>
+
+            <button type="submit" [disabled]="commentForm.invalid" class="btn btn-primary rounded-pill px-5 py-2 text-white fw-bold shadow">
+              Submit Comment <i class="fas fa-paper-plane ms-2"></i>
+            </button>
+          </form>
+        </div>
+      </section>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="col-lg-4">
+      <!-- Related Posts Widget -->
+      <div *ngIf="relatedPosts.length > 0" class="card border-0 shadow-sm rounded-4 p-4 mb-4">
+        <h5 class="text-dark fw-bold mb-3">Related Posts</h5>
+        <div class="d-flex flex-column gap-3">
+          <div *ngFor="let rel of relatedPosts" class="d-flex align-items-center gap-3">
+            <img [src]="assetUrl(rel.featuredImage)" [alt]="rel.title" class="rounded-3" style="width: 60px; height: 60px; object-fit: cover;">
+            <div>
+              <h6 class="mb-1 fw-bold">
+                <a [routerLink]="['/blog', rel.slug]" class="text-decoration-none text-dark hover-primary">{{ rel.title }}</a>
+              </h6>
+              <small class="text-muted">{{ rel.createdDate | date:'mediumDate' }}</small>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Popular Posts Widget -->
+      <div class="card border-0 shadow-sm rounded-4 p-4">
+        <h5 class="text-dark fw-bold mb-3">Popular Posts</h5>
+        <div class="d-flex flex-column gap-3">
+          <div *ngFor="let pop of popularPosts" class="d-flex align-items-center gap-3">
+            <img [src]="assetUrl(pop.featuredImage)" [alt]="pop.title" class="rounded-3" style="width: 60px; height: 60px; object-fit: cover;">
+            <div>
+              <h6 class="mb-1 fw-bold">
+                <a [routerLink]="['/blog', pop.slug]" class="text-decoration-none text-dark hover-primary">{{ pop.title }}</a>
+              </h6>
+              <small class="text-muted"><i class="far fa-eye me-1"></i> {{ pop.viewCount || 0 }} views</small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,74 @@
+﻿@model List<ResumeViewModel>
+@{
+    ViewData["Title"] = "Resume Views";
+    Layout = "_AdminLayout";
+}
+
+<div class="container-fluid py-4">
+    <h2 class="mb-4"><i class="fas fa-file-pdf text-danger me-2"></i>Resume Views & Downloads</h2>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Visitor Name</th>
+                            <th>Email</th>
+                            <th>Company</th>
+                            <th>Designation</th>
+                            <th>Location</th>
+                            <th>Date</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.Any())
+                        {
+                            @foreach (var view in Model)
+                            {
+                                <tr>
+                                    <td>@(view.VisitorName ?? "Anonymous")</td>
+                                    <td>@(view.VisitorEmail ?? "—")</td>
+                                    <td>@(view.CompanyName ?? "—")</td>
+                                    <td>@(view.Designation ?? "—")</td>
+                                    <td>
+                                        @if (!string.IsNullOrEmpty(view.City) || !string.IsNullOrEmpty(view.Country))
+                                        {
+                                            <i class="fas fa-map-marker-alt me-1 text-muted"></i>
+                                            @(view.City ?? "") @(view.Country ?? "")
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">Unknown</span>
+                                        }
+                                    </td>
+                                    <td>@view.ViewDate.ToString("MMM dd, yyyy HH:mm")</td>
+                                    <td>
+                                        @if (view.IsDownloaded)
+                                        {
+                                            <span class="badge bg-success">Downloaded</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-secondary">Viewed</span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="7" class="text-center py-4">
+                                    <i class="fas fa-file-pdf fa-3x text-muted mb-3"></i>
+                                    <p class="text-muted">No resume views yet</p>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

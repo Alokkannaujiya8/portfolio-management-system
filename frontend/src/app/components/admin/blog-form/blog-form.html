@@ -1,0 +1,146 @@
+<div class="container-fluid py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2 class="text-dark fw-bold mb-0">
+        <i class="fas" [ngClass]="isEditMode ? 'fa-edit text-warning' : 'fa-plus text-primary'"></i> 
+        {{ isEditMode ? 'Edit Blog Post' : 'Create Blog Post' }}
+      </h2>
+      <p class="text-muted mb-0 small">Write or update your technical articles here.</p>
+    </div>
+    <button (click)="onCancel()" class="btn btn-outline-secondary rounded-pill px-3">
+      <i class="fas fa-arrow-left me-1"></i> Back to List
+    </button>
+  </div>
+
+  <div *ngIf="isLoading" class="text-center py-5">
+    <div class="spinner-border text-primary" role="status"></div>
+    <p class="text-muted mt-2 small">Loading post details...</p>
+  </div>
+
+  <div *ngIf="!isLoading">
+    <div *ngIf="errorMessage" class="alert alert-danger rounded-3 small py-2 mb-4">{{ errorMessage }}</div>
+
+    <form (ngSubmit)="onSubmit()" #postForm="ngForm">
+      <div class="row g-4">
+        
+        <!-- Left Side: Main Post Content -->
+        <div class="col-lg-8">
+          <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
+            <h5 class="text-dark fw-bold mb-4">Post Content</h5>
+            
+            <div class="mb-3">
+              <label for="title" class="form-label fw-bold text-muted small">Post Title *</label>
+              <input type="text" id="title" name="title" class="form-control form-control-lg rounded-3" 
+                     placeholder="e.g. Getting Started with Angular" required 
+                     [(ngModel)]="model.title" (ngModelChange)="onTitleChange()">
+            </div>
+
+            <div class="mb-3">
+              <label for="slug" class="form-label fw-bold text-muted small">URL Slug *</label>
+              <input type="text" id="slug" name="slug" class="form-control rounded-3" 
+                     placeholder="e.g. getting-started-with-angular" required [(ngModel)]="model.slug">
+              <div class="form-text small text-muted">Auto-generated from title, must be URL-safe (lowercase, dashes, no spaces).</div>
+            </div>
+
+            <div class="mb-3">
+              <label for="excerpt" class="form-label fw-bold text-muted small">Excerpt / Summary *</label>
+              <textarea id="excerpt" name="excerpt" class="form-control rounded-3" rows="3" 
+                        placeholder="Write a brief, catchy summary of the post..." required [(ngModel)]="model.excerpt"></textarea>
+            </div>
+
+            <div class="mb-0">
+              <label for="content" class="form-label fw-bold text-muted small">Article Body *</label>
+              <textarea id="content" name="content" class="form-control rounded-3 font-monospace" rows="12" 
+                        placeholder="Write article content using markdown or HTML..." required [(ngModel)]="model.content"></textarea>
+            </div>
+          </div>
+
+          <!-- SEO Configuration Card -->
+          <div class="card border-0 shadow-sm rounded-4 p-4">
+            <h5 class="text-dark fw-bold mb-4"><i class="fas fa-search me-2 text-info"></i>SEO Configurations (Optional)</h5>
+            
+            <div class="mb-3">
+              <label for="metaTitle" class="form-label fw-bold text-muted small">Meta Title</label>
+              <input type="text" id="metaTitle" name="metaTitle" class="form-control rounded-3" 
+                     placeholder="Page title for search engines" [(ngModel)]="model.metaTitle">
+            </div>
+
+            <div class="mb-3">
+              <label for="metaDescription" class="form-label fw-bold text-muted small">Meta Description</label>
+              <textarea id="metaDescription" name="metaDescription" class="form-control rounded-3" rows="3" 
+                        placeholder="Page description snippet..." [(ngModel)]="model.metaDescription"></textarea>
+            </div>
+
+            <div class="mb-0">
+              <label for="metaKeywords" class="form-label fw-bold text-muted small">Meta Keywords</label>
+              <input type="text" id="metaKeywords" name="metaKeywords" class="form-control rounded-3" 
+                     placeholder="e.g. angular, tutorial, coding" [(ngModel)]="model.metaKeywords">
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Side: Metadata / Files & Options -->
+        <div class="col-lg-4">
+          <!-- Publishing Parameters -->
+          <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
+            <h5 class="text-dark fw-bold mb-4">Settings</h5>
+
+            <div class="mb-3">
+              <label for="category" class="form-label fw-bold text-muted small">Category *</label>
+              <select id="category" name="categoryId" class="form-select rounded-3" required [(ngModel)]="model.categoryId">
+                <option [value]="null" disabled selected>Select Category</option>
+                <option *ngFor="let cat of categories" [value]="cat.categoryId">{{ cat.categoryName }}</option>
+              </select>
+            </div>
+
+            <div class="mb-4">
+              <label for="tags" class="form-label fw-bold text-muted small">Tags (Comma separated)</label>
+              <input type="text" id="tags" name="tags" class="form-control rounded-3" 
+                     placeholder="e.g. angular, dotnet, webdev" [(ngModel)]="model.tags">
+            </div>
+
+            <div class="mb-3 form-check form-switch">
+              <input type="checkbox" id="isPublished" name="isPublished" class="form-check-input" [(ngModel)]="model.isPublished">
+              <label for="isPublished" class="form-check-label fw-bold text-muted small">Publish Article</label>
+              <div class="form-text small">Drafts are only visible to you in this console.</div>
+            </div>
+
+            <div class="mb-0 form-check form-switch">
+              <input type="checkbox" id="isFeatured" name="isFeatured" class="form-check-input" [(ngModel)]="model.isFeatured">
+              <label for="isFeatured" class="form-check-label fw-bold text-muted small">Featured Post</label>
+              <div class="form-text small">Pinned to featured lists.</div>
+            </div>
+          </div>
+
+          <!-- Featured Image File -->
+          <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
+            <h5 class="text-dark fw-bold mb-3">Cover Image</h5>
+            
+            <div class="mb-3">
+              <label class="form-label fw-bold text-muted small">Choose File</label>
+              <input type="file" (change)="onFileSelected($event)" accept="image/*" class="form-control rounded-3">
+            </div>
+
+            <!-- Preview Frame -->
+            <div *ngIf="imagePreview" class="border rounded-3 p-2 text-center bg-light">
+              <img [src]="imagePreview" class="img-fluid rounded" style="max-height: 200px; object-fit: contain;" alt="Upload Preview">
+            </div>
+          </div>
+
+          <!-- Action buttons -->
+          <div class="card border-0 shadow-sm rounded-4 p-4">
+            <button type="submit" [disabled]="postForm.invalid || isSaving" class="btn btn-primary btn-lg rounded-pill w-100 mb-2 py-3">
+              <span *ngIf="isSaving" class="spinner-border spinner-border-sm me-2"></span>
+              {{ isEditMode ? 'Save Changes' : 'Publish Post' }}
+            </button>
+            <button type="button" (click)="onCancel()" class="btn btn-outline-secondary rounded-pill w-100 py-3">
+              Cancel
+            </button>
+          </div>
+
+        </div>
+
+      </div>
+    </form>
+  </div>
+</div>

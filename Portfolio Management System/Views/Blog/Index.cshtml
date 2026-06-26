@@ -1,0 +1,229 @@
+﻿@model List<BlogPostModel>
+@{
+    ViewData["Title"] = "Blog";
+    var categories = ViewBag.Categories as List<BlogCategoryModel> ?? new List<BlogCategoryModel>();
+    var popularPosts = ViewBag.PopularPosts as List<BlogPostModel> ?? new List<BlogPostModel>();
+    var currentPage = ViewBag.CurrentPage ?? 1;
+    var totalPages = ViewBag.TotalPages ?? 1;
+}
+
+<!-- Page Header -->
+<section class="py-5 bg-primary text-white">
+    <div class="container text-center">
+        <h1 class="display-4 fw-bold">My Blog</h1>
+        <p class="lead">Thoughts, tutorials and insights about web development</p>
+    </div>
+</section>
+
+<!-- Blog Content -->
+<section class="py-5">
+    <div class="container">
+        <div class="row">
+            <!-- Main Content -->
+            <div class="col-lg-8">
+                @if (ViewBag.SearchTerm != null)
+                {
+                    <div class="alert alert-info">
+                        Search results for: <strong>"@ViewBag.SearchTerm"</strong>
+                        <a href="/Blog" class="float-end">Clear</a>
+                    </div>
+                }
+
+                @if (!Model.Any())
+                {
+                    <div class="text-center py-5">
+                        <i class="fas fa-newspaper fa-4x text-muted mb-3"></i>
+                        <h3>No posts yet</h3>
+                        <p class="text-muted">Check back later for new content!</p>
+                    </div>
+                }
+
+                @foreach (var post in Model)
+                {
+                    <article class="card border-0 shadow-sm mb-4">
+                        @if (!string.IsNullOrEmpty(post.FeaturedImage))
+                        {
+                            <img src="@post.FeaturedImage" class="card-img-top" alt="@post.Title" style="height: 300px; object-fit: cover;">
+                        }
+                        <div class="card-body p-4">
+                            @if (post.IsFeatured)
+                            {
+                                <span class="badge bg-warning text-dark mb-3">Featured</span>
+                            }
+
+                            <h2 class="card-title h3 mb-3">
+                                <a href="/Blog/Post/@post.Slug" class="text-decoration-none text-dark">@post.Title</a>
+                            </h2>
+
+                            <div class="d-flex text-muted mb-3">
+                                <span class="me-3"><i class="far fa-calendar me-1"></i>@post.FormattedDate</span>
+                                <span class="me-3"><i class="far fa-clock me-1"></i>@post.ReadingTime</span>
+                                <span class="me-3"><i class="far fa-eye me-1"></i>@post.ViewCount views</span>
+                                <span class="me-3"><i class="far fa-heart me-1"></i>@post.LikeCount likes</span>
+                                <span><i class="far fa-comment me-1"></i>@post.CommentCount comments</span>
+                            </div>
+
+                            <p class="card-text">@(post.Excerpt ?? (post.Content.Length > 200 ? post.Content.Substring(0, 200) + "..." : post.Content))</p>
+
+                            @if (post.TagList.Any())
+                            {
+                                <div class="mb-3">
+                                    @foreach (var tag in post.TagList.Take(5))
+                                    {
+                                        <a href="/Blog?tag=@tag" class="badge bg-light text-dark text-decoration-none me-1 p-2">#@tag</a>
+                                    }
+                                </div>
+                            }
+
+                            <!-- LIKE BUTTON - Index page par bhi -->
+                            <div class="d-flex align-items-center mt-3">
+                                <button class="btn btn-outline-danger btn-sm like-btn" data-postid="@post.PostId">
+                                    <i class="fas fa-heart me-1"></i>
+                                    <span class="like-text">Like</span>
+                                    (<span class="like-count">@post.LikeCount</span>)
+                                </button>
+
+                                <span class="ms-3">
+                                    <a href="/Blog/Post/@post.Slug" class="btn btn-primary btn-sm">
+                                        Read More <i class="fas fa-arrow-right ms-1"></i>
+                                    </a>
+                                </span>
+                            </div>
+                        </div>
+                    </article>
+                }
+
+                <!-- Pagination -->
+                @if (totalPages > 1)
+                {
+                    <nav aria-label="Blog pagination">
+                        <ul class="pagination justify-content-center">
+                            <li class="page-item @(currentPage == 1 ? "disabled" : "")">
+                                <a class="page-link" href="@Url.Action("Index", new { page = currentPage - 1 })">Previous</a>
+                            </li>
+                            @for (int i = 1; i <= totalPages; i++)
+                            {
+                                <li class="page-item @(i == currentPage ? "active" : "")">
+                                    <a class="page-link" href="@Url.Action("Index", new { page = i })">@i</a>
+                                </li>
+                            }
+                            <li class="page-item @(currentPage == totalPages ? "disabled" : "")">
+                                <a class="page-link" href="@Url.Action("Index", new { page = currentPage + 1 })">Next</a>
+                            </li>
+                        </ul>
+                    </nav>
+                }
+            </div>
+
+            <!-- Sidebar -->
+            <div class="col-lg-4">
+                <!-- Search -->
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-body">
+                        <h5 class="mb-3">Search</h5>
+                        <form action="/Blog" method="get">
+                            <div class="input-group">
+                                <input type="text" class="form-control" name="search" placeholder="Search posts..." value="@ViewBag.SearchTerm">
+                                <button class="btn btn-primary" type="submit">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Categories -->
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-body">
+                        <h5 class="mb-3">Categories</h5>
+                        @foreach (var category in categories)
+                        {
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <a href="/Blog?categoryId=@category.CategoryId" class="text-decoration-none">
+                                    <i class="fas fa-folder me-2 text-primary"></i>@category.CategoryName
+                                </a>
+                                <span class="badge bg-primary">@category.PostCount</span>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <!-- Popular Posts -->
+                @if (popularPosts.Any())
+                {
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body">
+                            <h5 class="mb-3">Popular Posts</h5>
+                            @foreach (var post in popularPosts)
+                            {
+                                <div class="d-flex mb-3">
+                                    @if (!string.IsNullOrEmpty(post.FeaturedImage))
+                                    {
+                                        <img src="@post.FeaturedImage" alt="@post.Title" class="rounded-3 me-3" style="width: 60px; height: 60px; object-fit: cover;">
+                                    }
+                                    else
+                                    {
+                                        <div class="bg-light rounded-3 me-3 d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                                            <i class="fas fa-newspaper text-primary"></i>
+                                        </div>
+                                    }
+                                    <div>
+                                        <h6 class="mb-1"><a href="/Blog/Post/@post.Slug" class="text-decoration-none text-dark">@post.Title</a></h6>
+                                        <small class="text-muted"><i class="far fa-eye me-1"></i>@post.ViewCount views</small>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Anti-forgery Token for AJAX calls -->
+@Html.AntiForgeryToken()
+
+@section Scripts {
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            console.log("✅ Blog Index Page Loaded");
+
+            var token = $('input[name="__RequestVerificationToken"]').val();
+
+            // LIKE BUTTONS - Index page par
+            $('.like-btn').on('click', function() {
+                var button = $(this);
+                var postId = button.data('postid');
+                var likeCount = button.find('.like-count');
+                var likeText = button.find('.like-text');
+
+                console.log("Like clicked for post:", postId);
+
+                $.ajax({
+                    url: '/Blog/ToggleLike',
+                    type: 'POST',
+                    data: { postId: postId },
+                    headers: { 'RequestVerificationToken': token },
+                    success: function(response) {
+                        if (response.success) {
+                            likeCount.text(response.likeCount);
+
+                            if (response.action === 'liked') {
+                                button.removeClass('btn-outline-danger').addClass('btn-danger');
+                                likeText.text('Liked');
+                            } else {
+                                button.removeClass('btn-danger').addClass('btn-outline-danger');
+                                likeText.text('Like');
+                            }
+                        }
+                    }
+                });
+            });
+
+            // Check if user already liked posts (optional)
+            // You can add logic here to check liked status from server
+        });
+    </script>
+}

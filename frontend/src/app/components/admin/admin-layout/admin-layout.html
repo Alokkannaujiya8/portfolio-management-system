@@ -1,0 +1,27 @@
+<main class="admin-shell" style="display: flex; height: 100vh; min-height: 100vh; overflow: hidden; margin: 0; width: 100%;">
+  <aside class="bg-dark text-white p-3 d-flex flex-column gap-2" style="width: 260px; height: 100vh; overflow-y: auto; flex-shrink: 0; border: none; border-radius: 0;">
+    <div class="text-center py-4 border-bottom border-secondary mb-3">
+      <i class="fas fa-user-shield fa-2x text-warning mb-2"></i>
+      <h5 class="mb-0 fw-bold">Admin Portal</h5>
+    </div>
+    
+    <a routerLink="/admin/dashboard" routerLinkActive="active" class="btn btn-outline-light border-0 text-start py-2 px-3"><i class="fas fa-tachometer-alt me-2"></i>Dashboard</a>
+    <a routerLink="/admin/profile" routerLinkActive="active" class="btn btn-outline-light border-0 text-start py-2 px-3"><i class="fas fa-user me-2"></i>Profile</a>
+    <a routerLink="/admin/skills" routerLinkActive="active" class="btn btn-outline-light border-0 text-start py-2 px-3"><i class="fas fa-chart-bar me-2"></i>Skills</a>
+    <a routerLink="/admin/projects" routerLinkActive="active" class="btn btn-outline-light border-0 text-start py-2 px-3"><i class="fas fa-project-diagram me-2"></i>Projects</a>
+    <a routerLink="/admin/experience" routerLinkActive="active" class="btn btn-outline-light border-0 text-start py-2 px-3"><i class="fas fa-briefcase me-2"></i>Experience</a>
+    <a routerLink="/admin/education" routerLinkActive="active" class="btn btn-outline-light border-0 text-start py-2 px-3"><i class="fas fa-graduation-cap me-2"></i>Education</a>
+    <a routerLink="/admin/messages" routerLinkActive="active" class="btn btn-outline-light border-0 text-start py-2 px-3"><i class="fas fa-envelope me-2"></i>Messages</a>
+    <a routerLink="/admin/blog" routerLinkActive="active" class="btn btn-outline-light border-0 text-start py-2 px-3"><i class="fas fa-blog me-2"></i>Blogs</a>
+    <a routerLink="/admin/gallery" routerLinkActive="active" class="btn btn-outline-light border-0 text-start py-2 px-3"><i class="fas fa-images me-2"></i>Gallery</a>
+    <a routerLink="/admin/logs" routerLinkActive="active" class="btn btn-outline-light border-0 text-start py-2 px-3"><i class="fas fa-history me-2"></i>Logs</a>
+    
+    <div class="mt-4 pt-3 border-top border-secondary pb-3">
+      <button (click)="onLogout()" class="btn btn-danger w-100 rounded-pill py-2"><i class="fas fa-sign-out-alt me-2"></i>Logout</button>
+    </div>
+  </aside>
+  <section class="flex-grow-1 p-5 bg-light" style="overflow-y: auto; height: 100vh;">
+    <router-outlet></router-outlet>
+  </section>
+</main>
+
